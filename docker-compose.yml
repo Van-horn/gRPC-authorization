@@ -1,0 +1,23 @@
+version: '3'
+
+networks:
+  microservices-network:
+    driver: bridge
+
+services:
+
+  client:
+    build:
+      context: ./gg
+      dockerfile: Dockerfile
+    networks:
+      - microservices-network
+    depends_on:
+      - tokens-microservice
+
+  tokens-microservice:
+    build:
+      context: ./tokens-microservice
+      dockerfile: Dockerfile
+    networks:
+      - microservices-network
