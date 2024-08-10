@@ -14,7 +14,7 @@ const packageDefinition = protoLoader.loadSync(protoFile, {
    oneofs: true,
 })
 const {
-   tokens: { GenerateTokens, ValidAccessToken, ValidRefreshToken },
+   Tokens: { GenerateTokens, ValidAccessToken, ValidRefreshToken },
 } = grpc.loadPackageDefinition(packageDefinition)
 
 async function main(): Promise<number> {
