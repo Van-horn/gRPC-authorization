@@ -1,0 +1,16 @@
+{
+   "compilerOptions": {
+      "module": "CommonJS",
+      "allowJs": true,
+      "moduleDetection": "force",
+      "moduleResolution": "Node",
+      "target": "ES6",
+      "sourceMap": true,
+      "outDir": "build",
+      "strict": true,
+      "resolveJsonModule": true,
+      "declaration": true
+   },
+   "include": ["src/**/*"],
+   "exclude": ["**/*.test.ts", "**/*.test.js"]
+}

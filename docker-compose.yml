@@ -3,21 +3,80 @@ version: '3'
 networks:
   microservices-network:
     driver: bridge
+  db-network:
+    driver: bridge
+  client-network:
+    driver: bridge
 
 services:
 
-  client:
-    build:
-      context: ./gg
-      dockerfile: Dockerfile
-    networks:
-      - microservices-network
-    depends_on:
-      - tokens-microservice
+  # client:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - client-network
+  #   depends_on:
+  #     - nginx
 
+  # nginx:
+  #   build:
+  #     context: ./backend/nginx
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "443:443"
+  #     - "80:80"
+  #   networks:
+  #     - microservices-network
+  #     - client-network
+  #   depends_on:
+  #     - authentication-microservice
+  # authentication-microservice:
+  #   build:
+  #     context: ./backend/authentication-microservice
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - tokens-microservice
+  #     - master-server
+  #     - slave-server
+  #   networks:
+  #     - microservices-network
+  #     - db-network
   tokens-microservice:
     build:
       context: ./tokens-microservice
       dockerfile: Dockerfile
     networks:
       - microservices-network
+
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - db-network
+
+  # master-server:
+  #   build:
+  #     context: ./backend/master-server
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - db-network
+
+  slave-server:
+    build:
+      context: ./slave-server
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    networks:
+      - db-network
+
+volumes:
+  postgres-data:
