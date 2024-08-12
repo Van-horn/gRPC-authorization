@@ -22,7 +22,7 @@ class UserService implements IUserService.IUserService {
             // }],
          })
 
-         if (!user) return null
+         if (!user) throw ApiError.BadRequest('There is not user')
 
          return user
       } catch (error) {

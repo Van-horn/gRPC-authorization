@@ -3,9 +3,18 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --only=production
+COPY webpack.config.js ./
+COPY tsconfig.json ./
+COPY ./src ./src
 
-COPY dist/ ./dist/
+RUN npm ci
+RUN npm run build
+
+RUN rm -rf /app/src
+RUN rm /app/webpack.config.js
+RUN rm /app/tsconfig.json
+
+RUN npm prune --production
 
 ENV GRPC_HOST=0.0.0.0
 ENV GRPC_PORT=8080
