@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 import { ITokens } from 'types-for-store/tokens'
+import ApiError from 'shared-for-store/exceptions/ApiError'
 
 namespace ITokensService {
    export interface ITokensService {
@@ -22,8 +23,8 @@ class TokensService implements ITokensService.ITokensService {
             accessToken,
             refreshToken,
          }
-      } catch (error) {
-         return null
+      } catch (error: unknown) {
+         throw ApiError.ServerError([error])
       }
    }
    validAccessToken(accessToken: string): boolean {
@@ -31,7 +32,7 @@ class TokensService implements ITokensService.ITokensService {
          const data = jwt.verify(accessToken, process.env.JWT_ACCESS ?? 'JWT_ACCESS')
          return !!data
       } catch (error) {
-         return false
+         throw ApiError.BadRequest('Token has died')
       }
    }
    validRefreshToken(refreshToken: string): boolean {
@@ -39,7 +40,7 @@ class TokensService implements ITokensService.ITokensService {
          const data = jwt.verify(refreshToken, process.env.JWT_REFRESH ?? 'JWT_REFRESH')
          return !!data
       } catch (error) {
-         return false
+         throw ApiError.BadRequest('Token has died')
       }
    }
 }

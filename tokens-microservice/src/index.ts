@@ -3,6 +3,7 @@ const protoLoader = require('@grpc/proto-loader')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, './.env') })
 const protoFile = path.join(__dirname, '../node_modules', 'proto-for-store', 'tokens', '.proto')
+import ApiError from 'shared-for-store/exceptions/ApiError'
 
 const tokensController = require('./controllers/tokens-controller')
 
@@ -13,6 +14,7 @@ const packageDefinition = protoLoader.loadSync(protoFile, {
    defaults: true,
    oneofs: true,
 })
+
 const {
    Tokens: { GenerateTokens, ValidAccessToken, ValidRefreshToken },
 } = grpc.loadPackageDefinition(packageDefinition)
@@ -32,10 +34,8 @@ async function main(): Promise<number> {
          },
       )
       return 0
-   } catch (error) {
-      console.error('Error starting server:', error)
-
-      return 1
+   } catch (error: unknown) {
+      throw ApiError.ServerError([error])
    }
 }
 main()

@@ -1,5 +1,6 @@
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
 import { ITokens } from 'types-for-store/tokens'
+import ApiError from 'shared-for-store/exceptions/ApiError'
 
 const tokensService = require('../services/tokens-service')
 
@@ -29,8 +30,8 @@ class TokensController implements ITokensController.ITokensController {
          const result: ITokens.ITokens = tokensService.generateTokens(call.request)
          callback(null, result)
          return 0
-      } catch (error: unknown) {
-         callback(null)
+      } catch (error: any) {
+         callback(error, null)
          return 1
       }
    }
@@ -43,8 +44,8 @@ class TokensController implements ITokensController.ITokensController {
          const result: boolean = tokensService.validAccessToken(call.request.token)
          callback(null, result)
          return 0
-      } catch (error: unknown) {
-         callback(null)
+      } catch (error: any) {
+         callback(error, null)
          return 1
       }
    }
@@ -57,8 +58,8 @@ class TokensController implements ITokensController.ITokensController {
          const result: boolean = tokensService.validAccessToken(call.request.token)
          callback(null, result)
          return 0
-      } catch (error: unknown) {
-         callback(null)
+      } catch (error: any) {
+         callback(error, null)
          return 1
       }
    }
