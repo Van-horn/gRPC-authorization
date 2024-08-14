@@ -9,6 +9,7 @@ module.exports = {
       filename: 'index.js',
       path: path.resolve(__dirname, 'dist'),
       clean: true,
+      libraryTarget: 'umd',
    },
    resolve: {
       extensions: ['.ts', '.js'],
@@ -23,9 +24,6 @@ module.exports = {
             exclude: /\.test.ts$/,
             use: {
                loader: 'ts-loader',
-               options: {
-                  transpileOnly: true,
-               },
             },
          },
          {

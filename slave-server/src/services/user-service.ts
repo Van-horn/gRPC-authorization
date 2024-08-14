@@ -1,8 +1,8 @@
 /* eslint-disable no-useless-catch */
+const { ApiError } = require('shared-for-store')
 import { SlaveServer } from 'types-for-store/slave-server'
 
 const { UsersSchema, TokensSchema } = require('../DB_DATA/models')
-const ApiError = require('../exceptions/ApiError')
 
 namespace IUserService {
    export interface IUserService {
@@ -25,8 +25,8 @@ class UserService implements IUserService.IUserService {
          if (!user) throw ApiError.BadRequest('There is not user')
 
          return user
-      } catch (error) {
-         throw error
+      } catch (error: unknown) {
+         throw ApiError.ServerError([error])
       }
    }
 }

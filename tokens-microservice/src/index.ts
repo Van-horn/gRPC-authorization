@@ -3,7 +3,7 @@ const protoLoader = require('@grpc/proto-loader')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, './.env') })
 const protoFile = path.join(__dirname, '../node_modules', 'proto-for-store', 'tokens', '.proto')
-import ApiError from 'shared-for-store/exceptions/ApiError'
+const {ApiError} = require('shared-for-store')
 
 const tokensController = require('./controllers/tokens-controller')
 

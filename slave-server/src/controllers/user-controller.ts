@@ -1,8 +1,8 @@
+const { ApiError } = require('shared-for-store')
 import { SlaveServer } from 'types-for-store/slave-server'
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
 
 const userService = require('../services/user-service')
-const ApiError = require('../exceptions/ApiError')
 
 namespace IUserController {
    export interface IUserController {
@@ -19,13 +19,13 @@ class UserController implements IUserController.IUserController {
       callback: sendUnaryData<SlaveServer.IUser | null>,
    ): Promise<number> {
       try {
-         if (!call.request.userId) throw ApiError.BadRequest('There are not all data')
+         if (!call.request?.userId) throw ApiError.BadRequest('There are not all data')
 
          const user = await userService.getUser(call.request)
          callback(null, user)
          return 0
-      } catch (error) {
-         callback(null)
+      } catch (error: any) {
+         callback(error, null)
          return 1
       }
    }

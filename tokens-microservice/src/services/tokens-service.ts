@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 import { ITokens } from 'types-for-store/tokens'
-import ApiError from 'shared-for-store/exceptions/ApiError'
+const { ApiError } = require('shared-for-store')
 
 namespace ITokensService {
    export interface ITokensService {
