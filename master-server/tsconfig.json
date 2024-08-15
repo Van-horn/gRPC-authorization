@@ -1,0 +1,15 @@
+{
+   "compilerOptions": {
+      "module": "CommonJS",
+      "allowJs": true,
+      "moduleDetection": "force",
+      "target": "ES6",
+      "sourceMap": true,
+      "esModuleInterop": true,
+      "outDir": "dist",
+      "strict": true,
+      "resolveJsonModule": true
+   },
+   "include": ["src/**/*"],
+   "exclude": ["**/*.test.ts", "**/*.test.js", "node_modules", "dist"]
+}

@@ -26,6 +26,7 @@ class UserService implements IUserService.IUserService {
 
          return user
       } catch (error: unknown) {
+         if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
       }
    }

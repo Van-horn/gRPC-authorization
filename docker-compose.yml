@@ -60,14 +60,14 @@ services:
     networks:
       - db-network
 
-  # master-server:
-  #   build:
-  #     context: ./backend/master-server
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - db-network
+  master-server:
+    build:
+      context: ./master-server
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    networks:
+      - db-network
 
   slave-server:
     build:

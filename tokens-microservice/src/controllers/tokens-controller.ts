@@ -1,6 +1,6 @@
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
 import { ITokens } from 'types-for-store/tokens'
-const { ApiError } = require('shared-for-store')
+const { ApiError, grpcErrorHandler } = require('shared-for-store')
 
 const tokensService = require('../services/tokens-service')
 
@@ -31,8 +31,8 @@ class TokensController implements ITokensController.ITokensController {
          const result: ITokens.ITokens = tokensService.generateTokens(call.request)
          callback(null, result)
          return 0
-      } catch (error: any) {
-         callback(error, null)
+      } catch (error: typeof ApiError) {
+         callback(grpcErrorHandler(error), null)
          return 1
       }
    }
@@ -41,12 +41,12 @@ class TokensController implements ITokensController.ITokensController {
       callback: sendUnaryData<boolean | null>,
    ): number {
       try {
-         if (!call.request.token) throw ApiError.BadRequest('No token')
+         if (!call.request?.token) throw ApiError.BadRequest('No token')
          const result: boolean = tokensService.validAccessToken(call.request.token)
          callback(null, result)
          return 0
-      } catch (error: any) {
-         callback(error, null)
+      } catch (error: typeof ApiError) {
+         callback(grpcErrorHandler(error), null)
          return 1
       }
    }
@@ -55,12 +55,12 @@ class TokensController implements ITokensController.ITokensController {
       callback: sendUnaryData<boolean | null>,
    ): number {
       try {
-         if (!call.request.token) throw ApiError.BadRequest('No token')
+         if (!call.request?.token) throw ApiError.BadRequest('No token')
          const result: boolean = tokensService.validAccessToken(call.request.token)
          callback(null, result)
          return 0
-      } catch (error: any) {
-         callback(error, null)
+      } catch (error: typeof ApiError) {
+         callback(grpcErrorHandler(error), null)
          return 1
       }
    }

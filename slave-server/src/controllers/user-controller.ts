@@ -1,4 +1,4 @@
-const { ApiError } = require('shared-for-store')
+const { ApiError, grpcErrorHandler } = require('shared-for-store')
 import { SlaveServer } from 'types-for-store/slave-server'
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
 
@@ -24,8 +24,8 @@ class UserController implements IUserController.IUserController {
          const user = await userService.getUser(call.request)
          callback(null, user)
          return 0
-      } catch (error: any) {
-         callback(error, null)
+      } catch (error: typeof ApiError) {
+         callback(grpcErrorHandler(error), null)
          return 1
       }
    }

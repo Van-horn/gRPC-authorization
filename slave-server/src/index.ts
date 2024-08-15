@@ -18,11 +18,10 @@ const packageDefinition = protoLoader.loadSync(protoFile, {
 const {
    SlaveServer: { Users },
 } = grpc.loadPackageDefinition(packageDefinition)
-
 async function main(): Promise<number> {
    try {
       await sequelize.authenticate()
-      await sequelize.sync()
+      await sequelize.sync({ alter: true })
       const server = new grpc.Server()
       server.addService(Users.service, { getUser: tokensController.getUser })
       await server.bindAsync(

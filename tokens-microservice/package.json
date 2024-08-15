@@ -27,7 +27,7 @@
       "dotenv": "^16.4.5",
       "jsonwebtoken": "^9.0.2",
       "proto-for-store": "^1.1.2",
-      "shared-for-store": "^1.0.1"
+      "shared-for-store": "^1.1.2"
    },
    "devDependencies": {
       "@types/jest": "^29.5.12",
