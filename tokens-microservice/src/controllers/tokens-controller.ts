@@ -1,34 +1,36 @@
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
-import { ITokens } from 'types-for-store/tokens'
+import { Tokens } from 'types-for-store/tokens'
 const { ApiError, grpcErrorHandler } = require('shared-for-store')
 
-const tokensService = require('../services/tokens-service')
+import ITokensService from '../services/tokens-service'
+const tokensService = require('../services/tokens-service') as ITokensService.TokensService
 
 namespace ITokensController {
-   export interface ITokensController {
-      generateTokens(
-         call: ServerUnaryCall<unknown, ITokens.ITokens | null>,
-         callback: sendUnaryData<ITokens.ITokens | null>,
+   export interface TokensController {
+      generateTokens<T>(
+         call: ServerUnaryCall<T, Tokens.ITokens | null>,
+         callback: sendUnaryData<Tokens.ITokens | null>,
       ): number
       validAccessToken(
-         call: ServerUnaryCall<ITokens.IValidationRequest, boolean | null>,
-         callback: sendUnaryData<boolean | null>,
+         call: ServerUnaryCall<Tokens.IValidationRequest, Tokens.IValidationResponse | null>,
+         callback: sendUnaryData<Tokens.IValidationResponse | null>,
       ): number
       validRefreshToken(
-         call: ServerUnaryCall<ITokens.IValidationRequest, boolean | null>,
-         callback: sendUnaryData<boolean | null>,
+         call: ServerUnaryCall<Tokens.IValidationRequest, Tokens.IValidationResponse | null>,
+         callback: sendUnaryData<Tokens.IValidationResponse | null>,
       ): number
    }
 }
 
-class TokensController implements ITokensController.ITokensController {
-   generateTokens(
-      call: ServerUnaryCall<unknown, ITokens.ITokens | null>,
-      callback: sendUnaryData<ITokens.ITokens | null>,
+class TokensController implements ITokensController.TokensController {
+   generateTokens<T>(
+      call: ServerUnaryCall<T, Tokens.ITokens | null>,
+      callback: sendUnaryData<Tokens.ITokens | null>,
    ): number {
       try {
          if (!call.request) throw ApiError.BadRequest('No data')
-         const result: ITokens.ITokens = tokensService.generateTokens(call.request)
+
+         const result = tokensService.generateTokens<T>(call.request)
          callback(null, result)
          return 0
       } catch (error: typeof ApiError) {
@@ -37,12 +39,12 @@ class TokensController implements ITokensController.ITokensController {
       }
    }
    validAccessToken(
-      call: ServerUnaryCall<ITokens.IValidationRequest, boolean | null>,
-      callback: sendUnaryData<boolean | null>,
+      call: ServerUnaryCall<Tokens.IValidationRequest, Tokens.IValidationResponse | null>,
+      callback: sendUnaryData<Tokens.IValidationResponse | null>,
    ): number {
       try {
          if (!call.request?.token) throw ApiError.BadRequest('No token')
-         const result: boolean = tokensService.validAccessToken(call.request.token)
+         const result = tokensService.validAccessToken(call.request.token)
          callback(null, result)
          return 0
       } catch (error: typeof ApiError) {
@@ -51,12 +53,12 @@ class TokensController implements ITokensController.ITokensController {
       }
    }
    validRefreshToken(
-      call: ServerUnaryCall<ITokens.IValidationRequest, boolean | null>,
-      callback: sendUnaryData<boolean | null>,
+      call: ServerUnaryCall<Tokens.IValidationRequest, Tokens.IValidationResponse | null>,
+      callback: sendUnaryData<Tokens.IValidationResponse | null>,
    ): number {
       try {
          if (!call.request?.token) throw ApiError.BadRequest('No token')
-         const result: boolean = tokensService.validAccessToken(call.request.token)
+         const result = tokensService.validAccessToken(call.request.token)
          callback(null, result)
          return 0
       } catch (error: typeof ApiError) {
@@ -66,4 +68,5 @@ class TokensController implements ITokensController.ITokensController {
    }
 }
 
+export default ITokensController
 module.exports = new TokensController()

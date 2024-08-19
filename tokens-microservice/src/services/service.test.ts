@@ -1,10 +1,16 @@
-const { generateTokens, validAccessToken, validRefreshToken } = require('./tokens-service')
+import ITokensService from './tokens-service'
+
+const { generateTokens, validAccessToken, validRefreshToken } =
+   require('./tokens-service') as ITokensService.TokensService
+
 describe('tokens-service', () => {
-   const { accessToken, refreshToken } = generateTokens({})
+   const tokens = generateTokens<Record<never, never>>({})
+   const { accessToken, refreshToken } = tokens
+
    test('generate-tokens', () => {
-      expect(Object.keys(generateTokens({}))).toHaveLength(2)
-      expect(generateTokens({})).toHaveProperty('accessToken')
-      expect(generateTokens({})).toHaveProperty('refreshToken')
+      expect(Object.keys(tokens)).toHaveLength(2)
+      expect(tokens).toHaveProperty('accessToken')
+      expect(tokens).toHaveProperty('refreshToken')
    })
    test('valid-accesstoken', () => {
       expect(validAccessToken(accessToken)).toBe(true)

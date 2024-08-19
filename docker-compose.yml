@@ -33,17 +33,19 @@ services:
   #     - client-network
   #   depends_on:
   #     - authentication-microservice
-  # authentication-microservice:
-  #   build:
-  #     context: ./backend/authentication-microservice
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     - tokens-microservice
-  #     - master-server
-  #     - slave-server
-  #   networks:
-  #     - microservices-network
-  #     - db-network
+  authentication-microservice:
+    build:
+      context: ./authentication-microservice
+      dockerfile: Dockerfile
+    depends_on:
+      - tokens-microservice
+      - master-server
+      - slave-server
+    networks:
+      - microservices-network
+      - db-network
+
+      
   tokens-microservice:
     build:
       context: ./tokens-microservice

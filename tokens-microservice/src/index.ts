@@ -2,10 +2,11 @@ const grpc = require('@grpc/grpc-js')
 const protoLoader = require('@grpc/proto-loader')
 const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, './.env') })
-const protoFile = path.join(__dirname, '../node_modules', 'proto-for-store', 'tokens', '.proto')
 const { ApiError } = require('shared-for-store')
+const protoFile = path.resolve(__dirname, '../node_modules/proto-for-store/src/tokens/.proto')
 
-const tokensController = require('./controllers/tokens-controller')
+import ITokensController from './controllers/tokens-controller'
+const tokensController = require('./controllers/tokens-controller') as ITokensController.TokensController
 
 const packageDefinition = protoLoader.loadSync(protoFile, {
    keepCase: true,
@@ -15,16 +16,16 @@ const packageDefinition = protoLoader.loadSync(protoFile, {
    oneofs: true,
 })
 
-const {
-   Tokens: { GenerateTokens, ValidAccessToken, ValidRefreshToken },
-} = grpc.loadPackageDefinition(packageDefinition)
+const { GenerateTokens, ValidAccessToken, ValidRefreshToken } = grpc.loadPackageDefinition(packageDefinition).Tokens
 
 async function main(): Promise<number> {
    try {
       const server = new grpc.Server()
       server.addService(GenerateTokens.service, { generateTokens: tokensController.generateTokens })
       server.addService(ValidAccessToken.service, { validAccessToken: tokensController.validAccessToken })
-      server.addService(ValidRefreshToken.service, { validRefreshToken: tokensController.validRefreshToken })
+      server.addService(ValidRefreshToken.service, {
+         validRefreshToken: tokensController.validRefreshToken,
+      })
 
       await server.bindAsync(
          `${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 8080}`,
@@ -35,7 +36,7 @@ async function main(): Promise<number> {
       )
 
       return 0
-   } catch (error: unknown) {
+   } catch (error) {
       throw ApiError.ServerError([error])
    }
 }
