@@ -7,10 +7,12 @@ networks:
     driver: bridge
   client-network:
     driver: bridge
+  kibana-network:
+    driver: bridge
 
 services:
 
-  # client:
+  # frontend:
   #   build:
   #     context: ./frontend
   #     dockerfile: Dockerfile
@@ -21,21 +23,21 @@ services:
   #   depends_on:
   #     - nginx
 
-  # nginx:
-  #   build:
-  #     context: ./backend/nginx
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "443:443"
-  #     - "80:80"
-  #   networks:
-  #     - microservices-network
-  #     - client-network
-  #   depends_on:
-  #     - authentication-microservice
+  nginx:
+    build:
+      context: ./backend/nginx
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - microservices-network
+      - client-network
+    depends_on:
+      - authentication-microservice
   authentication-microservice:
     build:
-      context: ./authentication-microservice
+      context: ./backend/authentication-microservice
       dockerfile: Dockerfile
     depends_on:
       - tokens-microservice
@@ -45,17 +47,16 @@ services:
       - microservices-network
       - db-network
 
-      
   tokens-microservice:
     build:
-      context: ./tokens-microservice
+      context: ./backend/tokens-microservice
       dockerfile: Dockerfile
     networks:
       - microservices-network
 
   postgres:
     build:
-      context: ./postgres
+      context: ./backend/DB/postgres
       dockerfile: Dockerfile
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -64,7 +65,7 @@ services:
 
   master-server:
     build:
-      context: ./master-server
+      context: ./backend/DB/master-server
       dockerfile: Dockerfile
     depends_on:
       - postgres
@@ -73,12 +74,28 @@ services:
 
   slave-server:
     build:
-      context: ./slave-server
+      context: ./backend/DB/slave-server
       dockerfile: Dockerfile
     depends_on:
       - postgres
     networks:
       - db-network
+  elasticsearch:
+    build:
+      context: ./backend/logs/elasticsearch
+      dockerfile: Dockerfile
+    networks:
+      - kibana-network
+  kibana:
+    build:
+      context: ./backend/logs/kibana
+      dockerfile: Dockerfile
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    networks:
+      - kibana-network
 
 volumes:
   postgres-data:

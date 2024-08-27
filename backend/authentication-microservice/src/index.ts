@@ -40,24 +40,30 @@ const packageDefinitionAuth = protoLoader.loadSync(protoAuth, {
    oneofs: true,
 })
 
-const { SlaveServer } = grpc.loadPackageDefinition(packageDefinitionSlaveServer)
-const { MasterServer } = grpc.loadPackageDefinition(packageDefinitionMasterServer)
+const SlaveServer = grpc.loadPackageDefinition(packageDefinitionSlaveServer).SlaveServer.Users
+const MasterServer = grpc.loadPackageDefinition(packageDefinitionMasterServer).MasterServer.Users
 const { Tokens } = grpc.loadPackageDefinition(packageDefinitionTokens)
 const { Authorization } = grpc.loadPackageDefinition(packageDefinitionAuth).Authorization
 
-const SlaveServerClient = new SlaveServer.Users(`${process.env.SLAVE_SERVER}`, grpc.credentials.createInsecure())
-const MasterServerClient = new MasterServer.Users(`${process.env.MASTER_SERVER}`, grpc.credentials.createInsecure())
+const SlaveServerClient = new SlaveServer(
+   `${process.env.SLAVE_SERVER ?? 'slave-server:8080'}`,
+   grpc.credentials.createInsecure(),
+)
+const MasterServerClient = new MasterServer(
+   `${process.env.MASTER_SERVER ?? 'master-server:8080'}`,
+   grpc.credentials.createInsecure(),
+)
 
 const GenTokensClient = new Tokens.GenerateTokens(
-   `${process.env.TOKENS_MICROSERVICE}`,
+   `${process.env.TOKENS_MICROSERVICE ?? 'tokens-microservice:8080'}`,
    grpc.credentials.createInsecure(),
 )
 const ValAccTokensClient = new Tokens.ValidAccessToken(
-   `${process.env.TOKENS_MICROSERVICE}`,
+   `${process.env.TOKENS_MICROSERVICE ?? 'tokens-microservice:8080'}`,
    grpc.credentials.createInsecure(),
 )
 const ValRefTokensClient = new Tokens.ValidRefreshToken(
-   `${process.env.TOKENS_MICROSERVICE}`,
+   `${process.env.TOKENS_MICROSERVICE ?? 'tokens-microservice:8080'}`,
    grpc.credentials.createInsecure(),
 )
 
@@ -84,4 +90,5 @@ async function main(): Promise<number> {
    }
 }
 main()
+
 export { SlaveServerClient, MasterServerClient, GenTokensClient, ValAccTokensClient, ValRefTokensClient }

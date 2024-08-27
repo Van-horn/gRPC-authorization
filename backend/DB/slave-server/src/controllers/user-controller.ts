@@ -24,7 +24,7 @@ class UserController implements IUserController.UserController {
       callback: sendUnaryData<SlaveServer.IUser | null>,
    ): Promise<number> {
       try {
-         if (!('userId' in call.request) || !('email' in call.request)) throw ApiError.BadRequest('There are not data')
+         if (!(call.request?.userId ?? call.request?.email)) throw ApiError.BadRequest('There are not data')
 
          const user = await userService.getUser(call.request)
          callback(null, user)

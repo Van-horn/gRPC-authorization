@@ -4,9 +4,10 @@ const path = require('path')
 const sequelize = require('./DB_DATA')
 require('dotenv').config({ path: path.join(__dirname, './.env') })
 const { ApiError } = require('shared-for-store')
+const protoFile = path.join(__dirname, '../node_modules', 'proto-for-store', 'src', 'master-server', '.proto')
 
-const protoFile = path.join(__dirname, '../node_modules', 'proto-for-store', 'master-server', '.proto')
-const tokensController = require('./controllers/user-controller')
+import IUserController from './controllers/user-controller'
+const tokensController = require('./controllers/user-controller') as IUserController.UserController
 
 const packageDefinition = protoLoader.loadSync(protoFile, {
    keepCase: true,
@@ -15,16 +16,16 @@ const packageDefinition = protoLoader.loadSync(protoFile, {
    defaults: true,
    oneofs: true,
 })
-const {
-   MasterServer: { Users },
-} = grpc.loadPackageDefinition(packageDefinition)
+const { Users } = grpc.loadPackageDefinition(packageDefinition).MasterServer
+
 async function main(): Promise<number> {
    try {
       await sequelize.authenticate()
-      await sequelize.sync({ alter: true })
+      await sequelize.sync({ alter: false, logging: false, force: false })
       const server = new grpc.Server()
       server.addService(Users.service, {
          registration: tokensController.registration,
+         writeToken: tokensController.writeToken,
          login: tokensController.login,
          logout: tokensController.logout,
          refresh: tokensController.refresh,
@@ -38,7 +39,7 @@ async function main(): Promise<number> {
          },
       )
       return 0
-   } catch (error: unknown) {
+   } catch (error) {
       throw ApiError.ServerError([error])
    }
 }

@@ -7,7 +7,7 @@ import { MasterServer } from 'types-for-store/master-server'
 import { Tokens } from 'types-for-store/tokens'
 import { SlaveServer } from 'types-for-store/slave-server'
 
-const { SlaveServerClient, MasterServerClient, GenTokensClient } = require('../index')
+import { SlaveServerClient, MasterServerClient, GenTokensClient } from '../index'
 
 namespace IUserService {
    export interface UserService {
@@ -18,23 +18,23 @@ namespace IUserService {
       forgotPassword(props: AuthMicroservice.IForReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }>
    }
 }
-const getUser = async (props: SlaveServer.IGetUserReqData): Promise<SlaveServer.IUser> =>
-   await new Promise<SlaveServer.IUser>((resolve, reject) => {
+const getUser = (props: SlaveServer.IGetUserReqData): Promise<SlaveServer.IUser> =>
+   new Promise<SlaveServer.IUser>((resolve, reject) => {
       SlaveServerClient.getUser(props, (error: ServiceError, response: SlaveServer.IUser) => {
          if (error) return reject(error)
          return resolve(response)
       })
    })
 
-const getTokens = async <T>(props: T): Promise<Tokens.ITokens> =>
-   await new Promise<Tokens.ITokens>((resolve, reject) => {
+const getTokens = <T>(props: T): Promise<Tokens.ITokens> =>
+   new Promise<Tokens.ITokens>((resolve, reject) => {
       GenTokensClient.GenerateTokens(props, (error: ServiceError, response: Tokens.ITokens) => {
          if (error) return reject(error)
          return resolve(response)
       })
    })
-const writeToken = async (props: MasterServer.IWTokenReqData): Promise<boolean> =>
-   await new Promise<boolean>((resolve, reject) => {
+const writeToken = (props: MasterServer.IWTokenReqData): Promise<boolean> =>
+   new Promise<boolean>((resolve, reject) => {
       MasterServerClient.writeToken(props, (error: ServiceError, response: boolean) => {
          if (error) return reject(error)
          return resolve(response)
@@ -48,9 +48,9 @@ class UserService implements IUserService.UserService {
       login,
    }: AuthMicroservice.IRegReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
       try {
-         const candidate = await getUser({ email })
+         const candidate = await getUser({ email, key: 'email' })
          if (candidate) throw ApiError.BadRequest('User already exists')
-
+         console.log(candidate)
          const hashPassword = await bcrypt.hash(password, 3)
 
          const user: MasterServer.IUser = await new Promise<MasterServer.IUser>((resolve, reject) => {
@@ -78,7 +78,7 @@ class UserService implements IUserService.UserService {
       email,
    }: AuthMicroservice.ILogReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
       try {
-         const dbUser = await getUser({ email })
+         const dbUser = await getUser({ email, key: 'email' })
 
          if (!dbUser) throw ApiError.BadRequest('There is not user')
 
@@ -113,7 +113,7 @@ class UserService implements IUserService.UserService {
       userId,
    }: AuthMicroservice.IRefReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
       try {
-         const dbUser = await getUser({ userId })
+         const dbUser = await getUser({ userId, key: 'userId' })
 
          if (dbUser.refreshToken !== refreshToken) throw ApiError.UnAthorizedError()
          const tokens = await getTokens<Record<never, never>>({})
@@ -133,7 +133,7 @@ class UserService implements IUserService.UserService {
       email,
    }: AuthMicroservice.IForReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
       try {
-         const dbUser = await getUser({ email })
+         const dbUser = await getUser({ email, key: 'email' })
 
          if (!dbUser) throw ApiError.BadRequest('There is not user')
 

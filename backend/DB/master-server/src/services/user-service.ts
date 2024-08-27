@@ -5,33 +5,41 @@ const { ApiError } = require('shared-for-store')
 import { MasterServer } from 'types-for-store/master-server'
 
 namespace IUserService {
-   export interface IUserService {
+   export interface UserService {
       registration(props: MasterServer.IRegReqData): Promise<MasterServer.IUser>
       login(props: MasterServer.ILogReqData): Promise<boolean>
       logout(props: MasterServer.ILogoutReqData): Promise<boolean>
       refresh(props: MasterServer.IRefReqData): Promise<boolean>
       forgotPassword(props: MasterServer.IForReqData): Promise<boolean>
+      writeToken(props: MasterServer.IWTokenReqData): Promise<boolean>
    }
 }
 
-class UserService implements IUserService.IUserService {
-   async registration({ refreshToken, ...props }: MasterServer.IRegReqData): Promise<MasterServer.IUser> {
+class UserService implements IUserService.UserService {
+   async registration({ ...props }: MasterServer.IRegReqData): Promise<MasterServer.IUser> {
       try {
          const {
             dataValues: { userId, createdAt },
          } = await UsersSchema.create(props)
-         await TokensSchema.create({ userId, refreshToken })
+
          return {
             ...props,
             userId,
             createdAt,
-            refreshToken,
             favorites: [],
             ratings: [],
          }
       } catch (error) {
          if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
+      }
+   }
+   async writeToken(props: MasterServer.IWTokenReqData): Promise<boolean> {
+      try {
+         await TokensSchema.create(props)
+         return true
+      } catch (error) {
+         return false
       }
    }
    async login({ userId, refreshToken }: MasterServer.ILogReqData): Promise<boolean> {
@@ -74,4 +82,5 @@ class UserService implements IUserService.IUserService {
    }
 }
 
+export default IUserService
 module.exports = new UserService()

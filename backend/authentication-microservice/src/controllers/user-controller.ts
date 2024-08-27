@@ -41,7 +41,6 @@ class UserController implements IUserController.UserController {
       try {
          if (!call.request?.email || !call.request?.password || !call.request?.login)
             throw ApiError.BadRequest('There are not all data')
-
          const user = await userService.registration(call.request)
 
          const metadata = new grpc.Metadata()
@@ -51,6 +50,7 @@ class UserController implements IUserController.UserController {
          callback(null, user)
          return 0
       } catch (error) {
+         console.log(error)
          callback(grpcErrorHandler(error), null)
          return 1
       }

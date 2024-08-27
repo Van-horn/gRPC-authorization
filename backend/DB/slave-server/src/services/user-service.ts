@@ -16,7 +16,7 @@ class UserService implements IUserService.IUserService {
       try {
          const user: Promise<SlaveServer.IUser> = await UsersSchema.findOne({
             where: {
-               ...props,
+               [props.key]: props[props.key],
             },
             attributes: ['userId', 'login', 'email', 'createdAt', 'password'],
             include: [
@@ -27,7 +27,7 @@ class UserService implements IUserService.IUserService {
             ],
          })
 
-         if (!user) throw ApiError.BadRequest('There is not user')
+         if (!user) return null
 
          return { ...user, ratings: [], favorites: [] }
       } catch (error) {
