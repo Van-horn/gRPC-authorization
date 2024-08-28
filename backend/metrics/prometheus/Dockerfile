@@ -1,0 +1,8 @@
+FROM prom/prometheus
+
+ENV PROMETHEUS_STORAGE_PATH=/prometheus
+ENV PROMETHEUS_WEB_LISTEN_ADDRESS=0.0.0.0:9090
+
+RUN mkdir -p /prometheus
+
+EXPOSE 9090
