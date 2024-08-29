@@ -30,6 +30,7 @@ class UserController implements IUserController.UserController {
          callback(null, user)
          return 0
       } catch (error: typeof ApiError) {
+         console.log(error)
          callback(grpcErrorHandler(error), null)
          return 1
       }

@@ -40,6 +40,8 @@ async function main(): Promise<number> {
       )
       return 0
    } catch (error) {
+            console.log(error)
+
       throw ApiError.ServerError([error])
    }
 }

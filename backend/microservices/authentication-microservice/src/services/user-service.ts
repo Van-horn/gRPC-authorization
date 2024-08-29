@@ -49,8 +49,8 @@ class UserService implements IUserService.UserService {
    }: AuthMicroservice.IRegReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
       try {
          const candidate = await getUser({ email, key: 'email' })
+         console.log("--------",candidate)
          if (candidate) throw ApiError.BadRequest('User already exists')
-         console.log(candidate)
          const hashPassword = await bcrypt.hash(password, 3)
 
          const user: MasterServer.IUser = await new Promise<MasterServer.IUser>((resolve, reject) => {

@@ -1,0 +1,14 @@
+@import "./mixins/flex.scss";
+
+
+#root {
+    width: inherit;
+    height: inherit;
+    @include full-center_j_d(center, column);
+}
+
+// main,
+// footer,
+// header {
+//     width: 100%;
+// }

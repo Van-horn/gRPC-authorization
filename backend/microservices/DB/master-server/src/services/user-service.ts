@@ -21,7 +21,7 @@ class UserService implements IUserService.UserService {
          const {
             dataValues: { userId, createdAt },
          } = await UsersSchema.create(props)
-
+console.log(userId,"--------")
          return {
             ...props,
             userId,

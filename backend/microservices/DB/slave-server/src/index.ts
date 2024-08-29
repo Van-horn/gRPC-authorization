@@ -34,6 +34,7 @@ async function main(): Promise<number> {
       )
       return 0
    } catch (error: unknown) {
+      console.log(error)
       throw ApiError.ServerError([error])
    }
 }

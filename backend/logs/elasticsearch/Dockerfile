@@ -1,13 +1,14 @@
 FROM elasticsearch:8.15.0
 
-ENV cluster.name="elasticsearch-cluster"
-ENV node.name="master"
-ENV path.data="/usr/share/elasticsearch/data"
-ENV path.logs="/usr/share/elasticsearch/logs"
-ENV network.host="0.0.0.0"
-ENV http.port="9200"
-ENV discovery.type="single-node"
-ENV xpack.security.enabled="false"
+ENV ELASTICSEARCH_CLUSTER_NAME="elasticsearch-cluster"
+ENV ELASTICSEARCH_NODE_NAME="master"
+ENV ELASTICSEARCH_PATH_DATA="/usr/share/elasticsearch/data"
+ENV ELASTICSEARCH_PATH_LOGS="/usr/share/elasticsearch/logs"
+ENV ELASTICSEARCH_NETWORK_HOST="0.0.0.0"
+ENV ELASTICSEARCH_HTTP_PORT="9200"
+ENV ELASTICSEARCH_DISCOVERY_TYPE="single-node"
+ENV discovery.type=single-node
+ENV xpack.security.enabled=false
 
 EXPOSE 9200
 

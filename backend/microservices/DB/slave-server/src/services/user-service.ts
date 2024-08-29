@@ -26,7 +26,7 @@ class UserService implements IUserService.IUserService {
                },
             ],
          })
-
+console.log("------",user)
          if (!user) return null
 
          return { ...user, ratings: [], favorites: [] }

@@ -96,6 +96,8 @@ services:
   #   build:
   #     context: ./backend/logs/elasticsearch
   #     dockerfile: Dockerfile
+  #   ports:
+  #     - 9200:9200
   #   networks:
   #     - kibana-network
 
