@@ -5,6 +5,7 @@ const sequelize = require('./DB_DATA')
 require('dotenv').config({ path: path.join(__dirname, './.env') })
 const { ApiError } = require('shared-for-store')
 const protoFile = path.join(__dirname, '../node_modules', 'proto-for-store', 'src', 'master-server', '.proto')
+import { getSchemes } from 'db-tables-for-store'
 
 import IUserController from './controllers/user-controller'
 const tokensController = require('./controllers/user-controller') as IUserController.UserController
@@ -17,6 +18,8 @@ const packageDefinition = protoLoader.loadSync(protoFile, {
    oneofs: true,
 })
 const { Users } = grpc.loadPackageDefinition(packageDefinition).MasterServer
+
+export default getSchemes(sequelize)
 
 async function main(): Promise<number> {
    try {
@@ -40,7 +43,7 @@ async function main(): Promise<number> {
       )
       return 0
    } catch (error) {
-            console.log(error)
+      console.log(error)
 
       throw ApiError.ServerError([error])
    }

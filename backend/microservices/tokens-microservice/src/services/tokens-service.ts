@@ -1,22 +1,20 @@
-const jwt = require('jsonwebtoken')
-import { Tokens } from 'types-for-store/tokens'
-const { ApiError } = require('shared-for-store')
+import { sign, verify } from 'jsonwebtoken'
+import { ITokens, TokenGenerationRequest } from 'types-for-store/src/tokens-microservice'
+import { ApiError } from 'shared-for-store'
 
-namespace ITokensService {
-   export interface TokensService {
-      generateTokens<T>(payload: T): Tokens.ITokens
-      validAccessToken(accessToken: string): Tokens.IValidationResponse
-      validRefreshToken(refreshToken: string): Tokens.IValidationResponse
-   }
+export interface ITokensService {
+   generateTokens(payload: TokenGenerationRequest): ITokens
+   accessTokenValidation(accessToken: string): boolean
+   refreshTokenValidation(refreshToken: string): boolean
 }
 
-class TokensService implements ITokensService.TokensService {
-   generateTokens<T>(payload: T): Tokens.ITokens {
+class TokensService implements ITokensService {
+   generateTokens(payload: TokenGenerationRequest): ITokens {
       try {
-         const accessToken = jwt.sign(payload, process.env.JWT_ACCESS ?? 'JWT_ACCESS', {
+         const accessToken = sign(payload, process.env.JWT_ACCESS ?? 'JWT_ACCESS', {
             expiresIn: '10m',
          })
-         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH ?? 'JWT_REFRESH', {
+         const refreshToken = sign(payload, process.env.JWT_REFRESH ?? 'JWT_REFRESH', {
             expiresIn: '30d',
          })
          return {
@@ -27,23 +25,22 @@ class TokensService implements ITokensService.TokensService {
          throw ApiError.ServerError([error])
       }
    }
-   validAccessToken<T, Response>(accessToken: T): Response {
+   accessTokenValidation(accessToken: string): boolean {
       try {
-         const data = jwt.verify(accessToken, process.env.JWT_ACCESS ?? 'JWT_ACCESS')
-         return !!data as Response
+         const data = verify(accessToken, process.env.JWT_ACCESS ?? 'JWT_ACCESS')
+         return !!data
       } catch (error) {
          throw ApiError.BadRequest('Token has died')
       }
    }
-   validRefreshToken<T, Response>(refreshToken: T): Response {
+   refreshTokenValidation(refreshToken: string): boolean {
       try {
-         const data = jwt.verify(refreshToken, process.env.JWT_REFRESH ?? 'JWT_REFRESH')
-         return !!data as Response
+         const data = verify(refreshToken, process.env.JWT_REFRESH ?? 'JWT_REFRESH')
+         return !!data
       } catch (error) {
          throw ApiError.BadRequest('Token has died')
       }
    }
 }
 
-export default ITokensService
-module.exports = new TokensService()
+export default new TokensService()

@@ -1,72 +1,56 @@
 import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
-import { Tokens } from 'types-for-store/tokens'
-const { ApiError, grpcErrorHandler } = require('shared-for-store')
+import {
+   ITokens,
+   ValidationResponse,
+   ValidationRequest,
+   TokenGenerationRequest,
+} from 'types-for-store/src/tokens-microservice'
+import { ApiError, grpcErrorHandler } from 'shared-for-store'
+import { handleUnaryCall } from '@grpc/grpc-js/build/src/server-call'
 
-import ITokensService from '../services/tokens-service'
-const tokensService = require('../services/tokens-service') as ITokensService.TokensService
+import tokensService from '../services/tokens-service'
 
-namespace ITokensController {
-   export interface TokensController {
-      generateTokens<T>(
-         call: ServerUnaryCall<T, Tokens.ITokens | null>,
-         callback: sendUnaryData<Tokens.ITokens | null>,
-      ): number
-      validAccessToken(
-         call: ServerUnaryCall<Tokens.IValidationRequest, Tokens.IValidationResponse | null>,
-         callback: sendUnaryData<Tokens.IValidationResponse | null>,
-      ): number
-      validRefreshToken(
-         call: ServerUnaryCall<Tokens.IValidationRequest, Tokens.IValidationResponse | null>,
-         callback: sendUnaryData<Tokens.IValidationResponse | null>,
-      ): number
-   }
+export interface ITokensController {
+   generateTokens: handleUnaryCall<TokenGenerationRequest, ITokens>
+   accessTokenValidation: handleUnaryCall<ValidationRequest, ValidationResponse>
+   refreshTokenValidation: handleUnaryCall<ValidationRequest, ValidationResponse>
 }
 
-class TokensController implements ITokensController.TokensController {
-   generateTokens<T>(
-      call: ServerUnaryCall<T, Tokens.ITokens | null>,
-      callback: sendUnaryData<Tokens.ITokens | null>,
-   ): number {
+class TokensController implements ITokensController {
+   generateTokens(call: ServerUnaryCall<TokenGenerationRequest, ITokens>, callback: sendUnaryData<ITokens>): void {
       try {
          if (!call.request) throw ApiError.BadRequest('No data')
 
-         const result = tokensService.generateTokens<T>(call.request)
+         const result = tokensService.generateTokens(call.request)
          callback(null, result)
-         return 0
-      } catch (error: typeof ApiError) {
-         callback(grpcErrorHandler(error), null)
-         return 1
+      } catch (error) {
+         if (error instanceof ApiError) callback(grpcErrorHandler(error), null)
       }
    }
-   validAccessToken(
-      call: ServerUnaryCall<Tokens.IValidationRequest, Tokens.IValidationResponse | null>,
-      callback: sendUnaryData<Tokens.IValidationResponse | null>,
-   ): number {
+   accessTokenValidation(
+      call: ServerUnaryCall<ValidationRequest, ValidationResponse | null>,
+      callback: sendUnaryData<ValidationResponse | null>,
+   ): void {
       try {
-         if (!call.request?.token) throw ApiError.BadRequest('No token')
-         const result = tokensService.validAccessToken(call.request.token)
+         if (!call.request) throw ApiError.BadRequest('No token')
+         const result = tokensService.accessTokenValidation(call.request)
          callback(null, result)
-         return 0
-      } catch (error: typeof ApiError) {
-         callback(grpcErrorHandler(error), null)
-         return 1
+      } catch (error) {
+         if (error instanceof ApiError) callback(grpcErrorHandler(error), null)
       }
    }
-   validRefreshToken(
-      call: ServerUnaryCall<Tokens.IValidationRequest, Tokens.IValidationResponse | null>,
-      callback: sendUnaryData<Tokens.IValidationResponse | null>,
-   ): number {
+   refreshTokenValidation(
+      call: ServerUnaryCall<ValidationRequest, ValidationResponse | null>,
+      callback: sendUnaryData<ValidationResponse | null>,
+   ): void {
       try {
-         if (!call.request?.token) throw ApiError.BadRequest('No token')
-         const result = tokensService.validAccessToken(call.request.token)
+         if (!call.request) throw ApiError.BadRequest('No token')
+         const result = tokensService.refreshTokenValidation(call.request)
          callback(null, result)
-         return 0
-      } catch (error: typeof ApiError) {
-         callback(grpcErrorHandler(error), null)
-         return 1
+      } catch (error) {
+         if (error instanceof ApiError) callback(grpcErrorHandler(error), null)
       }
    }
 }
 
-export default ITokensController
-module.exports = new TokensController()
+export default new TokensController()

@@ -1,6 +1,7 @@
 /* eslint-disable no-useless-catch */
 
-const { UsersSchema, TokensSchema } = require('../DB_DATA/models')
+import Schemes from '../index'
+const { TokensSchema, UsersSchema } = Schemes
 const { ApiError } = require('shared-for-store')
 import { MasterServer } from 'types-for-store/master-server'
 

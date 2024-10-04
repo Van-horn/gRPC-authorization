@@ -27,31 +27,31 @@ services:
   #     - nginx
 
 
-  nginx:
-    build:
-      context: ./backend/microservices/nginx
-      dockerfile: Dockerfile
-    ports:
-      - 80:80
-      - 443:443
-    networks:
-      - microservices-network
-      - client-network
-    depends_on:
-      - authentication-microservice
+  # nginx:
+  #   build:
+  #     context: ./backend/microservices/nginx
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   networks:
+  #     - microservices-network
+  #     - client-network
+  #   depends_on:
+  #     - authentication-microservice
 
 
-  authentication-microservice:
-    build:
-      context: ./backend/microservices/authentication-microservice
-      dockerfile: Dockerfile
-    depends_on:
-      - tokens-microservice
-      - master-server
-      - slave-server
-    networks:
-      - microservices-network
-      - db-network
+  # authentication-microservice:
+  #   build:
+  #     context: ./backend/microservices/authentication-microservice
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - tokens-microservice
+  #     - master-server
+  #     - slave-server
+  #   networks:
+  #     - microservices-network
+  #     - db-network
 
 
   tokens-microservice:
@@ -62,34 +62,34 @@ services:
       - microservices-network
 
 
-  postgres:
-    build:
-      context: ./backend/microservices/DB/postgres
-      dockerfile: Dockerfile
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - db-network
+  # postgres:
+  #   build:
+  #     context: ./backend/microservices/DB/postgres
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - db-network
 
 
-  master-server:
-    build:
-      context: ./backend/microservices/DB/master-server
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-    networks:
-      - db-network
+  # master-server:
+  #   build:
+  #     context: ./backend/microservices/DB/master-server
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - db-network
 
 
-  slave-server:
-    build:
-      context: ./backend/microservices/DB/slave-server
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-    networks:
-      - db-network
+  # slave-server:
+  #   build:
+  #     context: ./backend/microservices/DB/slave-server
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - db-network
 
 
   # elasticsearch:

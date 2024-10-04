@@ -23,6 +23,7 @@
    "dependencies": {
       "@grpc/grpc-js": "^1.11.1",
       "@grpc/proto-loader": "^0.7.13",
+      "db-tables-for-store": "^1.0.0",
       "dotenv": "^16.4.5",
       "pg": "^8.12.0",
       "pg-hstore": "^2.3.4",

@@ -21,7 +21,7 @@ module.exports = {
             use: {
                loader: 'ts-loader',
                options: {
-                  transpileOnly: true,
+                  transpileOnly: false,
                },
             },
          },
@@ -38,7 +38,16 @@ module.exports = {
       ],
    },
    externals: {
-      '@grpc/grpc-js': 'commonjs2 @grpc/grpc-js',
-      '@grpc/proto-loader': 'commonjs2 @grpc/proto-loader',
+      '@grpc/grpc-js': '@grpc/grpc-js',
+      '@grpc/proto-loader': '@grpc/proto-loader',
+      dotenv: 'dotenv',
+      jsonwebtoken: 'jsonwebtoken',
+      'shared-for-store': 'shared-for-store',
+      'proto-for-store': 'proto-for-store',
    },
+   optimization: {
+      minimize: true,
+      usedExports: true,
+   },
+   devtool: 'source-map',
 }
