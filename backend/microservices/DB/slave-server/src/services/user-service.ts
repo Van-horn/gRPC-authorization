@@ -1,37 +1,32 @@
-/* eslint-disable no-useless-catch */
-const { ApiError } = require('shared-for-store')
-import { SlaveServer } from 'types-for-store/slave-server'
+import { ApiError } from 'shared-for-store'
+import { Users } from 'types-for-store/src/slave-server'
+import { Tables } from '..'
 
-const { UsersSchema, TokensSchema } = require('../DB_DATA/models')
-
-namespace IUserService {
-   export interface IUserService {
-      getUser(props: SlaveServer.IGetUserReqData): Promise<SlaveServer.IUser | null>
-      // getUserByEmail(props: SlaveServer.IIsUserRes): Promise<SlaveServer.IUser | null>
-   }
+export interface IUserService {
+   userCredentials(props: Users.GetUserCredentials): Promise<Users.UserCredentials | null>
 }
 
-class UserService implements IUserService.IUserService {
-   async getUser(props: SlaveServer.IGetUserReqData): Promise<SlaveServer.IUser | null> {
+class UserService implements IUserService {
+   async userCredentials(props: Users.GetUserCredentials): Promise<Users.UserCredentials | null> {
       try {
-         const user: Promise<SlaveServer.IUser> = await UsersSchema.findOne({
-            where: {
-               [props.key]: props[props.key],
-            },
-            attributes: ['userId', 'login', 'email', 'createdAt', 'password'],
-            include: [
-               {
-                  model: TokensSchema,
-                  attributes: ['refreshToken'],
-               },
-            ],
-         })
-console.log("------",user)
+         const user = await Tables.Users.findOne()
+
+         // .findOne({
+         //    where: {
+         //       [props.key]: props[props.key],
+         //    },
+         //    attributes: ['user_id', 'login', 'email', 'createdAt', 'password'],
+         //    include: [
+         //       {
+         //          model: Tables.Tokens,
+         //          attributes: ['refreshToken'],
+         //       },
+         //    ],
+         // })
          if (!user) return null
 
-         return { ...user, ratings: [], favorites: [] }
+         return user
       } catch (error) {
-         if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
       }
    }
@@ -55,5 +50,4 @@ console.log("------",user)
    // }
 }
 
-export default IUserService
-module.exports = new UserService()
+export default new UserService()

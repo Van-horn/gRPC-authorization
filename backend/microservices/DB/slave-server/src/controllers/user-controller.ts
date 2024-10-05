@@ -1,38 +1,29 @@
-const { ApiError, grpcErrorHandler } = require('shared-for-store')
-import { SlaveServer } from 'types-for-store/slave-server'
-import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
+import { ApiError, grpcErrorHandler } from 'shared-for-store'
+import { ServerUnaryCall, handleUnaryCall, sendUnaryData } from '@grpc/grpc-js'
+import { Users } from 'types-for-store/src/slave-server'
 
-import IUserService from '../services/user-service'
-const userService = require('../services/user-service') as IUserService.IUserService
+import userService from '../services/user-service'
 
-namespace IUserController {
-   export interface UserController {
-      getUser(
-         call: ServerUnaryCall<SlaveServer.IGetUserReqData, SlaveServer.IUser | null>,
-         callback: sendUnaryData<SlaveServer.IUser | null>,
-      ): Promise<number>
-      // getUserByEmail(
-      //    call: ServerUnaryCall<SlaveServer.IGetUserByEmailReqData, SlaveServer.IUser | null>,
-      //    callback: sendUnaryData<SlaveServer.IUser | null>,
-      // ): Promise<number>
-   }
+export interface IUserController {
+   userCredentials: handleUnaryCall<Users.GetUserCredentials, Users.UserCredentials | null>
 }
 
-class UserController implements IUserController.UserController {
-   async getUser(
-      call: ServerUnaryCall<SlaveServer.IGetUserReqData, SlaveServer.IUser | null>,
-      callback: sendUnaryData<SlaveServer.IUser | null>,
-   ): Promise<number> {
+class UserController implements IUserController {
+   async userCredentials(
+      call: ServerUnaryCall<Users.GetUserCredentials, Users.UserCredentials | null>,
+      callback: sendUnaryData<Users.UserCredentials | null>,
+   ) {
       try {
-         if (!(call.request?.userId ?? call.request?.email)) throw ApiError.BadRequest('There are not data')
+         if (!(call.request?.user_id ?? call.request?.email)) throw ApiError.BadRequest('There are not data')
 
-         const user = await userService.getUser(call.request)
+         const user = await userService.userCredentials(call.request)
          callback(null, user)
-         return 0
-      } catch (error: typeof ApiError) {
-         console.log(error)
-         callback(grpcErrorHandler(error), null)
-         return 1
+      } catch (error) {
+         if (error instanceof ApiError) {
+            callback(grpcErrorHandler(error), null)
+         } else {
+            callback(null, null)
+         }
       }
    }
    // async getUserByEmail(
@@ -52,5 +43,4 @@ class UserController implements IUserController.UserController {
    // }
 }
 
-export default IUserController
-module.exports = new UserController()
+export default new UserController()
