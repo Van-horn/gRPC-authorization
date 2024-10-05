@@ -24,31 +24,43 @@ class TokensController implements ITokensController {
          const result = tokensService.generateTokens(call.request)
          callback(null, result)
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), null)
+         if (error instanceof ApiError) {
+            callback(grpcErrorHandler(error), null)
+         } else {
+            callback(null, null)
+         }
       }
    }
    accessTokenValidation(
       call: ServerUnaryCall<ValidationRequest, ValidationResponse | null>,
-      callback: sendUnaryData<ValidationResponse | null>,
+      callback: sendUnaryData<ValidationResponse | null>
    ): void {
       try {
-         if (!call.request) throw ApiError.BadRequest('No token')
-         const result = tokensService.accessTokenValidation(call.request)
-         callback(null, result)
+         if (!call.request.value) throw ApiError.BadRequest('No token')
+         const result = tokensService.accessTokenValidation(call.request.value)
+         callback(null, { value: result })
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), null)
+         if (error instanceof ApiError) {
+            callback(grpcErrorHandler(error), null)
+         } else {
+            callback(null, null)
+         }
       }
    }
    refreshTokenValidation(
       call: ServerUnaryCall<ValidationRequest, ValidationResponse | null>,
-      callback: sendUnaryData<ValidationResponse | null>,
+      callback: sendUnaryData<ValidationResponse | null>
    ): void {
       try {
-         if (!call.request) throw ApiError.BadRequest('No token')
-         const result = tokensService.refreshTokenValidation(call.request)
-         callback(null, result)
+         if (!call.request.value) throw ApiError.BadRequest('No token')
+         const result = tokensService.refreshTokenValidation(call.request.value)
+         callback(null, { value: result })
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), null)
+         if (error instanceof ApiError) {
+            callback(grpcErrorHandler(error), null)
+         } else {
+            callback(null, null)
+         }
       }
    }
 }

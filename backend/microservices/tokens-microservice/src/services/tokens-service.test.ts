@@ -15,10 +15,10 @@ describe('tokens-service', () => {
    })
    it('accessTokenValidation', () => {
       expect(accessTokenValidation(accessToken)).toBe(true)
-      expect(() => accessTokenValidation('token')).toThrow(ApiError.BadRequest('Token has died'))
+      expect(accessTokenValidation('token')).toBe(false)
    })
    it('refreshTokenValidation', () => {
       expect(refreshTokenValidation(refreshToken)).toBe(true)
-      expect(() => refreshTokenValidation('token')).toThrow(ApiError.BadRequest('Token has died'))
+      expect(refreshTokenValidation('token')).toBe(false)
    })
 })

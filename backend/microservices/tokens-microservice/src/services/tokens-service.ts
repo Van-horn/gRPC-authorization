@@ -30,7 +30,7 @@ class TokensService implements ITokensService {
          const data = verify(accessToken, process.env.JWT_ACCESS ?? 'JWT_ACCESS')
          return !!data
       } catch (error) {
-         throw ApiError.BadRequest('Token has died')
+         return false
       }
    }
    refreshTokenValidation(refreshToken: string): boolean {
@@ -38,7 +38,7 @@ class TokensService implements ITokensService {
          const data = verify(refreshToken, process.env.JWT_REFRESH ?? 'JWT_REFRESH')
          return !!data
       } catch (error) {
-         throw ApiError.BadRequest('Token has died')
+         return false
       }
    }
 }
