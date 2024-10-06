@@ -3,18 +3,18 @@ import { ITokens, TokenGenerationRequest } from 'types-for-store/src/tokens-micr
 import { ApiError } from 'shared-for-store'
 
 export interface ITokensService {
-   generateTokens(payload: TokenGenerationRequest): ITokens
+   generateTokens(value: TokenGenerationRequest): ITokens
    accessTokenValidation(accessToken: string): boolean
    refreshTokenValidation(refreshToken: string): boolean
 }
 
 class TokensService implements ITokensService {
-   generateTokens(payload: TokenGenerationRequest): ITokens {
+   generateTokens(value: TokenGenerationRequest): ITokens {
       try {
-         const accessToken = sign(payload, process.env.JWT_ACCESS ?? 'JWT_ACCESS', {
+         const accessToken = sign(value, process.env.JWT_ACCESS ?? 'JWT_ACCESS', {
             expiresIn: '10m',
          })
-         const refreshToken = sign(payload, process.env.JWT_REFRESH ?? 'JWT_REFRESH', {
+         const refreshToken = sign(value, process.env.JWT_REFRESH ?? 'JWT_REFRESH', {
             expiresIn: '30d',
          })
          return {

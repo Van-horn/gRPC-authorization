@@ -5,12 +5,12 @@ import { Users } from 'types-for-store/src/slave-server'
 import userService from '../services/user-service'
 
 export interface IUserController {
-   userCredentials: handleUnaryCall<Users.GetUserCredentials, Users.UserCredentials | null>
+   userCredentials: handleUnaryCall<Users.UserCredGetData, Users.UserCredentials | null>
 }
 
 class UserController implements IUserController {
    async userCredentials(
-      call: ServerUnaryCall<Users.GetUserCredentials, Users.UserCredentials | null>,
+      call: ServerUnaryCall<Users.UserCredGetData, Users.UserCredentials | null>,
       callback: sendUnaryData<Users.UserCredentials | null>,
    ) {
       try {

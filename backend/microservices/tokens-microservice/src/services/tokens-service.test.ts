@@ -1,5 +1,3 @@
-import { ApiError } from 'shared-for-store'
-
 import tokensService from './tokens-service'
 
 const { generateTokens, accessTokenValidation, refreshTokenValidation } = tokensService
@@ -14,11 +12,11 @@ describe('tokens-service', () => {
       expect(tokens).toHaveProperty('refreshToken')
    })
    it('accessTokenValidation', () => {
-      expect(accessTokenValidation(accessToken)).toBe(true)
-      expect(accessTokenValidation('token')).toBe(false)
+      expect(accessTokenValidation(accessToken)).toBe<boolean>(true)
+      expect(accessTokenValidation('token')).toBe<boolean>(false)
    })
    it('refreshTokenValidation', () => {
-      expect(refreshTokenValidation(refreshToken)).toBe(true)
-      expect(refreshTokenValidation('token')).toBe(false)
+      expect(refreshTokenValidation(refreshToken)).toBe<boolean>(true)
+      expect(refreshTokenValidation('token')).toBe<boolean>(false)
    })
 })

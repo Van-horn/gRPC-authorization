@@ -19,8 +19,6 @@ export interface ITokensController {
 class TokensController implements ITokensController {
    generateTokens(call: ServerUnaryCall<TokenGenerationRequest, ITokens>, callback: sendUnaryData<ITokens>): void {
       try {
-         if (!call.request) throw ApiError.BadRequest('No data')
-
          const result = tokensService.generateTokens(call.request)
          callback(null, result)
       } catch (error) {

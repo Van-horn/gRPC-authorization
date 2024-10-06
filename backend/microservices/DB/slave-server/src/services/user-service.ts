@@ -3,13 +3,13 @@ import { Users } from 'types-for-store/src/slave-server'
 import { Tables } from '..'
 
 export interface IUserService {
-   userCredentials(props: Users.GetUserCredentials): Promise<Users.UserCredentials | null>
+   userCredentials(props: Users.UserCredGetData): Promise<Users.UserCredentials | null>
 }
 
 class UserService implements IUserService {
-   async userCredentials(props: Users.GetUserCredentials): Promise<Users.UserCredentials | null> {
+   async userCredentials(props: Users.UserCredGetData): Promise<Users.UserCredentials | null> {
       try {
-         const user = await Tables.Users.findOne()
+         // const user = await Tables.Users.findOne()
 
          // .findOne({
          //    where: {
@@ -23,9 +23,9 @@ class UserService implements IUserService {
          //       },
          //    ],
          // })
-         if (!user) return null
+         // if (!user) return null
 
-         return user
+         return null
       } catch (error) {
          throw ApiError.ServerError([error])
       }

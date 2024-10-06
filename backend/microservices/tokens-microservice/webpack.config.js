@@ -39,7 +39,6 @@ module.exports = {
    },
    externals: {
       '@grpc/grpc-js': '@grpc/grpc-js',
-      '@grpc/proto-loader': '@grpc/proto-loader',
       dotenv: 'dotenv',
       jsonwebtoken: 'jsonwebtoken',
       'shared-for-store': 'shared-for-store',
