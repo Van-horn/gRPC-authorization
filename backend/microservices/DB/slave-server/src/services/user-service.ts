@@ -1,32 +1,43 @@
 import { ApiError } from 'shared-for-store'
-import { Users } from 'types-for-store/src/slave-server'
-import { Tables } from '..'
+import { Users } from 'types-for-store/dist/slave-server'
+import equivalence from 'types-for-store'
+import { MySequelize } from 'db-for-store/dist/tables'
 
 export interface IUserService {
-   userCredentials(props: Users.UserCredGetData): Promise<Users.UserCredentials | null>
+   userCredentials(props: Users.UserCredGetData): Promise<Users.UserCredentials>
 }
 
 class UserService implements IUserService {
-   async userCredentials(props: Users.UserCredGetData): Promise<Users.UserCredentials | null> {
+   private sequelize: MySequelize
+   private Tables: MySequelize['models']
+   constructor(sequelize: MySequelize) {
+      this.sequelize = sequelize
+      this.Tables = this.sequelize.models
+   }
+   async userCredentials(props: Users.UserCredGetData): Promise<Users.UserCredentials> {
       try {
-         // const user = await Tables.Users.findOne()
+         const searchKey = props?.email ? { email: props.email } : { user_id: props.user_id }
 
-         // .findOne({
-         //    where: {
-         //       [props.key]: props[props.key],
-         //    },
-         //    attributes: ['user_id', 'login', 'email', 'createdAt', 'password'],
-         //    include: [
-         //       {
-         //          model: Tables.Tokens,
-         //          attributes: ['refreshToken'],
-         //       },
-         //    ],
-         // })
-         // if (!user) return null
+         const user = await this.Tables.Users.findOne({
+            where: { ...searchKey },
+            attributes: ['user_id', 'email', 'login', 'password'],
+         })
 
-         return null
+         if (!user) return equivalence.emptySlaveServerUserCred
+
+         const token = await this.Tables.Tokens.findOne({
+            where: { user_id: user.dataValues.user_id },
+            attributes: ['refresh_token'],
+         })
+
+         if (!token) throw ApiError.UnAthorizedError()
+
+         return {
+            ...user.dataValues,
+            refreshToken: token.dataValues.refresh_token,
+         }
       } catch (error) {
+         if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
       }
    }
@@ -50,4 +61,4 @@ class UserService implements IUserService {
    // }
 }
 
-export default new UserService()
+export default UserService

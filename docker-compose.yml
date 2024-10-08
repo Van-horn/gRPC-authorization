@@ -54,12 +54,12 @@ services:
   #     - db-network
 
 
-  # tokens-microservice:
-  #   build:
-  #     context: ./backend/microservices/tokens-microservice
-  #     dockerfile: Dockerfile
-  #   networks:
-  #     - microservices-network
+  tokens-microservice:
+    build:
+      context: ./backend/microservices/tokens-microservice
+      dockerfile: Dockerfile
+    networks:
+      - microservices-network
 
 
   postgres:

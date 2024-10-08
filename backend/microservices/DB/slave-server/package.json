@@ -22,11 +22,11 @@
    "description": "",
    "dependencies": {
       "@grpc/grpc-js": "^1.11.1",
-      "db-for-store": "^1.0.1",
+      "db-for-store": "^1.0.4",
       "dotenv": "^16.4.5",
       "pg": "^8.12.0",
       "pg-hstore": "^2.3.4",
-      "proto-for-store": "^3.0.6",
+      "proto-for-store": "^3.0.12",
       "sequelize": "^6.37.3",
       "shared-for-store": "^1.1.3"
    },

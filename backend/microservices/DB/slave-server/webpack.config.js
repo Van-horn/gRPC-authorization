@@ -16,9 +16,6 @@ module.exports = {
    },
    resolve: {
       extensions: ['.ts', '.js'],
-      alias: {
-         pg: 'pg/lib/index.js',
-      },
    },
    module: {
       rules: [

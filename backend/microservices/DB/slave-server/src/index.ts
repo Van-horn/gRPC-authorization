@@ -1,14 +1,13 @@
 import { resolve } from 'path'
-import sequelize from './DB_DATA'
 import { config } from 'dotenv'
 config({ path: resolve(__dirname, './.env') })
 import { ApiError } from 'shared-for-store'
 import { SlaveDBProto } from 'proto-for-store'
-// import { GetSchemes } from 'db-for-store'
 
-import userController from './controllers/user-controller'
+import GetSequelize from './DB_DATA'
+import UserController from './controllers/user-controller'
 
-// export const Tables = GetSchemes(sequelize)
+const sequelize = GetSequelize('production')
 
 async function main(): Promise<void> {
    try {
@@ -16,7 +15,7 @@ async function main(): Promise<void> {
          url: `${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 8080}`,
          ServiceHandlers: {
             Users: {
-               userCredentials: userController.userCredentials,
+               userCredentials: new UserController(sequelize).userCredentials,
             },
          },
          finalCallback: () => {
@@ -24,8 +23,8 @@ async function main(): Promise<void> {
          },
       })
 
-      // await sequelize.authenticate()
-      // await sequelize.sync({ logging: false })
+      await sequelize.authenticate()
+      await sequelize.sync({ logging: false })
    } catch (error) {
       throw ApiError.ServerError([error])
    }

@@ -1,0 +1,73 @@
+version: '3'
+
+networks:
+  microservices-network:
+    driver: bridge
+  db-network:
+    driver: bridge
+  client-network:
+    driver: bridge
+  kibana-network:
+    driver: bridge
+  grafana-network:
+    driver: bridge
+
+services:
+
+  postgres:
+    build:
+      context: ./DB
+      dockerfile: Dockerfile
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5001:5432
+    networks:
+      - db-network
+
+  # elasticsearch:
+  #   build:
+  #     context: ./backend/logs/elasticsearch
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 9200:9200
+  #   networks:
+  #     - kibana-network
+
+
+  # kibana:
+  #   build:
+  #     context: ./backend/logs/kibana
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 5601:5601
+  #   depends_on:
+  #     - elasticsearch
+  #   networks:
+  #     - kibana-network
+
+
+  # prometheus:
+  #   build:
+  #     context: ./backend/metrics/prometheus
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 9090:9090
+  #   networks:
+  #     - grafana-network
+
+
+  # grafana:
+  #   build:
+  #     context: ./backend/metrics/grafana
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 9091:3000
+  #   depends_on:
+  #     - prometheus
+  #   networks:
+  #     - grafana-network
+ 
+
+volumes:
+  postgres-data:
