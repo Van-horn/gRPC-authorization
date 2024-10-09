@@ -8,15 +8,15 @@ export interface IUserService {
 }
 
 class UserService implements IUserService {
-   private sequelize: MySequelize
-   private Tables: MySequelize['models']
+   private readonly sequelize: MySequelize
+   private readonly Tables: MySequelize['models']
    constructor(sequelize: MySequelize) {
       this.sequelize = sequelize
       this.Tables = this.sequelize.models
    }
-   async userCredentials(props: Users.UserCredGetData): Promise<Users.UserCredentials> {
+   userCredentials = async (props: Users.UserCredGetData): Promise<Users.UserCredentials> => {
       try {
-         const searchKey = props?.email ? { email: props.email } : { user_id: props.user_id }
+         const searchKey = props?.user_id ? { email: props.user_id } : { user_id: props.email }
 
          const user = await this.Tables.Users.findOne({
             where: { ...searchKey },

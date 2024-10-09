@@ -2,11 +2,14 @@ import { ApiError } from 'shared-for-store'
 import { SlaveDBProto } from 'proto-for-store'
 import { Server } from '@grpc/grpc-js'
 import { Users } from 'types-for-store/dist/slave-server'
+import equivalence from 'types-for-store'
 
 import UserController from './controllers/user-controller'
 import GetSequelize from './DB_DATA'
 
 const sequelize = GetSequelize('test')
+
+const { userCredentials } = new UserController(sequelize)
 
 async function server(): Promise<Server> {
    try {
@@ -14,13 +17,10 @@ async function server(): Promise<Server> {
          url: `0.0.0.0:5000`,
          ServiceHandlers: {
             Users: {
-               userCredentials: new UserController(sequelize).userCredentials,
+               userCredentials: userCredentials,
             },
          },
       })
-
-      await sequelize.authenticate()
-      await sequelize.sync({ logging: false })
 
       return TestServer
    } catch (error) {
@@ -31,27 +31,14 @@ async function server(): Promise<Server> {
 test('slave-server', async () => {
    const TestServer = await server()
 
+   await sequelize.authenticate()
+   await sequelize.sync({ logging: false })
+
    const { UsersUserCredentials } = await SlaveDBProto.createSlaveDBClient({ url: '0.0.0.0:5000' })
 
    const user = await UsersUserCredentials<Users.UserCredGetData, Users.UserCredentials>({ user_id: 1 })
-   console.log(user)
-   //    if (tokens) {
-   //       expect(Object.keys(tokens)).toHaveLength(2)
-   //       expect(tokens).toHaveProperty('accessToken')
-   //       expect(tokens).toHaveProperty('refreshToken')
-   //    } else {
-   //       throw ApiError.BadRequest('No tokens for testing')
-   //    }
+   expect(user).toEqual<Users.UserCredentials>(equivalence.emptySlaveServerUserCred)
 
-   //    const accessTokenValidationRes = await TokensAccessTokenValidation<ValidationRequest, ValidationResponse>({
-   //       value: tokens.accessToken,
-   //    })
-   //    expect(accessTokenValidationRes).toStrictEqual<ValidationResponse>({ value: true })
-
-   //    const refreshTokenValidationRes = await TokensRefreshTokenValidation<ValidationRequest, ValidationResponse>({
-   //       value: tokens.refreshToken,
-   //    })
-   //    expect(refreshTokenValidationRes).toStrictEqual<ValidationResponse>({ value: true })
    sequelize.close()
    TestServer.forceShutdown()
-}, 60000)
+}, 20000)

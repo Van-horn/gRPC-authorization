@@ -1,5 +1,5 @@
 import { sign, verify } from 'jsonwebtoken'
-import { ITokens, TokenGenerationRequest } from 'types-for-store/src/tokens-microservice'
+import { ITokens, TokenGenerationRequest } from 'types-for-store/dist/tokens-microservice'
 import { ApiError } from 'shared-for-store'
 
 export interface ITokensService {

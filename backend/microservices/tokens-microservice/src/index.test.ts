@@ -5,7 +5,7 @@ import {
    ValidationRequest,
    ValidationResponse,
    TokenGenerationRequest,
-} from 'types-for-store/src/tokens-microservice'
+} from 'types-for-store/dist/tokens-microservice'
 import { Server } from '@grpc/grpc-js'
 
 import tokensController from './controllers/tokens-controller'

@@ -9,13 +9,15 @@ import UserController from './controllers/user-controller'
 
 const sequelize = GetSequelize('production')
 
+const { userCredentials } = new UserController(sequelize)
+
 async function main(): Promise<void> {
    try {
       await SlaveDBProto.createSlaveDBServer({
          url: `${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 8080}`,
          ServiceHandlers: {
             Users: {
-               userCredentials: new UserController(sequelize).userCredentials,
+               userCredentials: userCredentials,
             },
          },
          finalCallback: () => {

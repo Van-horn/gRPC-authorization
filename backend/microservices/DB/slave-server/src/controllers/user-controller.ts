@@ -11,19 +11,20 @@ export interface IUserController {
 }
 
 class UserController implements IUserController {
-   private service: UserService
+   private readonly service: UserService
 
    constructor(sequelize: MySequelize) {
       this.service = new UserService(sequelize)
    }
-   async userCredentials(
+
+   userCredentials = async (
       call: ServerUnaryCall<Users.UserCredGetData, Users.UserCredentials>,
       callback: sendUnaryData<Users.UserCredentials>,
-   ): Promise<void> {
+   ): Promise<void> => {
       try {
          if (!(call.request?.user_id ?? call.request?.email)) throw ApiError.BadRequest('There are not data')
-
          const user = await this.service.userCredentials(call.request)
+
          callback(null, user)
       } catch (error) {
          if (error instanceof ApiError) callback(grpcErrorHandler(error), equivalence.emptySlaveServerUserCred)
