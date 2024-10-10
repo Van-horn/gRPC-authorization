@@ -68,6 +68,11 @@ services:
       dockerfile: Dockerfile
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    # healthcheck:
+    #   test: ["CMD", "pg_isready"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
     networks:
       - db-network
 
@@ -82,14 +87,14 @@ services:
       - db-network
 
 
-  # slave-server:
-  #   build:
-  #     context: ./backend/microservices/DB/slave-server
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - db-network
+  slave-server:
+    build:
+      context: ./backend/microservices/DB/slave-server
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    networks:
+      - db-network
 
 
   # elasticsearch:
@@ -138,3 +143,4 @@ services:
 
 volumes:
   postgres-data:
+

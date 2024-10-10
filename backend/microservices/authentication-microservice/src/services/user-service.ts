@@ -1,164 +1,169 @@
-/* eslint-disable no-useless-catch */
-const bcrypt = require('bcryptjs')
-const { ApiError } = require('shared-for-store')
-import { ServiceError } from '@grpc/grpc-js'
-import { AuthMicroservice } from 'types-for-store/authentication-microservice'
-import { MasterServer } from 'types-for-store/master-server'
-import { Tokens } from 'types-for-store/tokens'
-import { SlaveServer } from 'types-for-store/slave-server'
+import { hash, compare } from 'bcrypt'
+import { MasterDBProto, SlaveDBProto, TokensProto } from 'proto-for-store'
+import { ApiError } from 'shared-for-store'
+import {
+   ForgotPasswordData,
+   ICredentials,
+   LoginData,
+   LogoutData,
+   RefreshData,
+   RegistrationData,
+} from 'types-for-store/dist/authentication-microservice'
+import { Users } from 'types-for-store/dist/slave-server'
+import { ITokens, TokenGenerationRequest } from 'types-for-store/dist/tokens-microservice'
+import { Authorization } from 'types-for-store/dist/master-server'
 
-import { SlaveServerClient, MasterServerClient, GenTokensClient } from '../index'
+type ICredentialsWithRefToken = ICredentials & { refreshToken?: string }
 
-namespace IUserService {
-   export interface UserService {
-      registration(props: AuthMicroservice.IRegReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }>
-      login(props: AuthMicroservice.ILogReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }>
-      logout(props: AuthMicroservice.ILogoutReqData): Promise<boolean>
-      refresh(props: AuthMicroservice.IRefReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }>
-      forgotPassword(props: AuthMicroservice.IForReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }>
-   }
+interface IUserService {
+   registration(props: RegistrationData): Promise<ICredentialsWithRefToken>
+   login(props: LoginData): Promise<ICredentialsWithRefToken>
+   logout(props: LogoutData): Promise<boolean>
+   refresh(props: RefreshData): Promise<ICredentialsWithRefToken>
+   forgotPassword(props: ForgotPasswordData): Promise<ICredentialsWithRefToken>
 }
-const getUser = (props: SlaveServer.IGetUserReqData): Promise<SlaveServer.IUser> =>
-   new Promise<SlaveServer.IUser>((resolve, reject) => {
-      SlaveServerClient.getUser(props, (error: ServiceError, response: SlaveServer.IUser) => {
-         if (error) return reject(error)
-         return resolve(response)
-      })
-   })
 
-const getTokens = <T>(props: T): Promise<Tokens.ITokens> =>
-   new Promise<Tokens.ITokens>((resolve, reject) => {
-      GenTokensClient.GenerateTokens(props, (error: ServiceError, response: Tokens.ITokens) => {
-         if (error) return reject(error)
-         return resolve(response)
-      })
-   })
-const writeToken = (props: MasterServer.IWTokenReqData): Promise<boolean> =>
-   new Promise<boolean>((resolve, reject) => {
-      MasterServerClient.writeToken(props, (error: ServiceError, response: boolean) => {
-         if (error) return reject(error)
-         return resolve(response)
-      })
-   })
+interface UserServiceArgs {
+   TokensClient: Awaited<ReturnType<typeof TokensProto.createTokensClient>>
+   SlaveDBProtoClient: Awaited<ReturnType<typeof SlaveDBProto.createSlaveDBClient>>
+   MasterDBProtoClient: Awaited<ReturnType<typeof MasterDBProto.createMasterDBClient>>
+}
 
-class UserService implements IUserService.UserService {
-   async registration({
-      email,
-      password,
-      login,
-   }: AuthMicroservice.IRegReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
+class UserService implements IUserService {
+   private readonly TokensClient
+   private readonly SlaveDBProtoClient
+   private readonly MasterDBProtoClient
+
+   constructor({ TokensClient, SlaveDBProtoClient, MasterDBProtoClient }: UserServiceArgs) {
+      this.TokensClient = TokensClient
+      this.SlaveDBProtoClient = SlaveDBProtoClient
+      this.MasterDBProtoClient = MasterDBProtoClient
+   }
+
+   registration = async ({ email, password, login }: RegistrationData): Promise<ICredentialsWithRefToken> => {
       try {
-         const candidate = await getUser({ email, key: 'email' })
-         console.log("--------",candidate)
-         if (candidate) throw ApiError.BadRequest('User already exists')
-         const hashPassword = await bcrypt.hash(password, 3)
+         const candidate = await this.SlaveDBProtoClient.UsersUserCredentials<
+            Users.UserCredGetData,
+            Users.UserCredentials
+         >({ email })
 
-         const user: MasterServer.IUser = await new Promise<MasterServer.IUser>((resolve, reject) => {
-            MasterServerClient.registration(
-               { email, login, password: hashPassword },
-               (error: ServiceError, response: MasterServer.IUser) => {
-                  if (error) return reject(error)
-                  resolve(response)
-               },
-            )
-         })
-         const tokens = await getTokens<Record<never, never>>({})
-         await writeToken({ userId: user.userId, refreshToken: tokens.refreshToken })
+         if (candidate) throw ApiError.BadRequest('User already exists')
+
+         const hashPassword = await hash(password, 3)
+
+         const tokens = await this.TokensClient.TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
+
+         if (!tokens?.refreshToken) throw ApiError.ServerError()
+
+         const userId = await this.MasterDBProtoClient.AuthorizationRegistration<
+            Authorization.RegistrationData,
+            Authorization.RegistrationRes
+         >({ email, login, refreshToken: tokens.refreshToken, password: hashPassword })
+
+         if (!userId?.user_id) throw ApiError.ServerError()
+
          return {
-            ...user,
             ...tokens,
+            email,
+            login,
+            user_id: userId.user_id,
          }
       } catch (error) {
          if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
       }
    }
-   async login({
-      password,
-      email,
-   }: AuthMicroservice.ILogReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
+   login = async ({ password, email }: LoginData): Promise<ICredentialsWithRefToken> => {
       try {
-         const dbUser = await getUser({ email, key: 'email' })
+         const dbUser = await this.SlaveDBProtoClient.UsersUserCredentials<
+            Users.UserCredGetData,
+            Users.UserCredentials
+         >({ email })
 
-         if (!dbUser) throw ApiError.BadRequest('There is not user')
+         if (dbUser?.user_id === -1 || !dbUser?.password) throw ApiError.BadRequest('There is not user')
 
-         const isPasswordEquals = await bcrypt.compare(password, dbUser.password)
-         if (!isPasswordEquals) throw ApiError.BadRequest('Invalid password')
+         const isPasswordEquals = await compare(password, dbUser.password)
+         if (!isPasswordEquals) throw ApiError.BadRequest('Invalid email or password')
 
-         const tokens = await getTokens<Record<never, never>>({})
-         await writeToken({ userId: dbUser.userId, refreshToken: tokens.refreshToken })
+         const tokens = await this.TokensClient.TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
 
-         return { ...dbUser, ...tokens }
+         if (!tokens?.refreshToken) throw ApiError.ServerError()
+
+         const isLogin = await this.MasterDBProtoClient.AuthorizationLogin<
+            Authorization.LoginData,
+            Authorization.LoginRes
+         >({
+            user_id: dbUser.user_id,
+            refreshToken: tokens.refreshToken,
+         })
+         if (!isLogin?.value) throw ApiError.ServerError()
+
+         return { ...tokens, email, user_id: dbUser.user_id, login: dbUser.login }
       } catch (error) {
          if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
       }
    }
-   async logout({ userId }: AuthMicroservice.ILogoutReqData): Promise<boolean> {
+   logout = async ({ user_id }: LogoutData): Promise<boolean> => {
       try {
-         await new Promise<boolean>((resolve, reject) => {
-            MasterServerClient.logout({ userId }, (error: ServiceError, response: boolean) => {
-               if (error) return reject(error)
-               resolve(response)
-            })
-         })
+         const isLogout = await this.MasterDBProtoClient.AuthorizationLogout<
+            Authorization.LogoutData,
+            Authorization.LogoutRes
+         >({ user_id })
+
+         if (!isLogout?.value) throw ApiError.ServerError()
+
          return true
       } catch (error) {
          if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
       }
    }
-   async refresh({
-      refreshToken,
-      userId,
-   }: AuthMicroservice.IRefReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
+   refresh = async ({ refreshToken, user_id }: RefreshData): Promise<ICredentialsWithRefToken> => {
       try {
-         const dbUser = await getUser({ userId, key: 'userId' })
+         const dbUser = await this.SlaveDBProtoClient.UsersUserCredentials<
+            Users.UserCredGetData,
+            Users.UserCredentials
+         >({ user_id })
 
-         if (dbUser.refreshToken !== refreshToken) throw ApiError.UnAthorizedError()
-         const tokens = await getTokens<Record<never, never>>({})
-         await writeToken({ userId: dbUser.userId, refreshToken: tokens.refreshToken })
+         if (dbUser?.user_id === -1 || !dbUser) throw ApiError.UnAthorizedError()
 
-         return {
-            ...dbUser,
-            ...tokens,
-         }
+         const tokens = await this.TokensClient.TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
+
+         if (!tokens?.refreshToken) throw ApiError.ServerError()
+
+         const isRefresh = await this.MasterDBProtoClient.AuthorizationRefresh<
+            Authorization.RefreshData,
+            Authorization.RefreshRes
+         >({ user_id, refreshToken })
+
+         return { ...tokens, user_id, email: dbUser.email, login: dbUser.login }
       } catch (error) {
          if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
       }
    }
-   async forgotPassword({
-      password,
-      email,
-   }: AuthMicroservice.IForReqData): Promise<AuthMicroservice.IUser & { refreshToken?: string }> {
+   forgotPassword = async ({ password, email }: ForgotPasswordData): Promise<ICredentialsWithRefToken> => {
       try {
-         const dbUser = await getUser({ email, key: 'email' })
-
-         if (!dbUser) throw ApiError.BadRequest('There is not user')
-
-         const tokens = await getTokens<Record<never, never>>({})
-         await writeToken({ userId: dbUser.userId, refreshToken: tokens.refreshToken })
-
-         const hashPassword = await bcrypt.hash(password, 3)
-
-         await new Promise<boolean>((resolve, reject) => {
-            MasterServerClient.forgotPassword(
-               {
-                  password: hashPassword,
-                  userId: dbUser.userId,
-                  refreshToken: tokens.refreshToken,
-               },
-               (error: ServiceError, response: boolean) => {
-                  if (error) return reject(error)
-                  resolve(response)
-               },
-            )
+         const dbUser = await this.SlaveDBProtoClient.UsersUserCredentials<
+            Users.UserCredGetData,
+            Users.UserCredentials
+         >({
+            email,
          })
-         return {
-            ...dbUser,
-            ...tokens,
-         }
+         if (dbUser?.user_id === -1 || !dbUser) throw ApiError.BadRequest('There is not user')
+
+         const tokens = await this.TokensClient.TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
+
+         if (!tokens?.refreshToken) throw ApiError.ServerError()
+
+         const hashPassword = await hash(password, 3)
+
+         const isForPas = await this.MasterDBProtoClient.AuthorizationForgotPassword<
+            Authorization.ForgotPasswordData,
+            Authorization.ForgotPasswordRes
+         >({ user_id: dbUser.user_id, password: hashPassword, refreshToken: tokens.refreshToken })
+         return { ...tokens, email, user_id: dbUser.user_id, login: dbUser.login }
       } catch (error) {
          if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
@@ -166,5 +171,4 @@ class UserService implements IUserService.UserService {
    }
 }
 
-export default IUserService
-module.exports = new UserService()
+export default UserService
