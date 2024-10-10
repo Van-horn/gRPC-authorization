@@ -1,5 +1,4 @@
 const path = require('path')
-const nodeExternals = require('webpack-node-externals')
 
 module.exports = {
    mode: 'production',
@@ -11,11 +10,12 @@ module.exports = {
       clean: true,
       libraryTarget: 'umd',
    },
+   optimization: {
+      minimize: true,
+      usedExports: true,
+   },
    resolve: {
       extensions: ['.ts', '.js'],
-      alias: {
-         pg: 'pg/lib/index.js',
-      },
    },
    module: {
       rules: [
@@ -24,6 +24,9 @@ module.exports = {
             exclude: /\.test.ts$/,
             use: {
                loader: 'ts-loader',
+               options: {
+                  transpileOnly: false,
+               },
             },
          },
          {
@@ -38,5 +41,14 @@ module.exports = {
          },
       ],
    },
-   externals: [nodeExternals(), '@grpc/grpc-js', '@grpc/proto-loader'],
+   externals: {
+      '@grpc/grpc-js': '@grpc/grpc-js',
+      pg: 'pg',
+      'pg-hstore': 'pg-hstore',
+      'proto-for-store': 'proto-for-store',
+      sequelize: 'sequelize',
+      'shared-for-store': 'shared-for-store',
+      dotenv: 'dotenv',
+      'db-for-store': 'db-for-store',
+   },
 }

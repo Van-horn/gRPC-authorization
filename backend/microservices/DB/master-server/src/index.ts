@@ -1,50 +1,31 @@
-const grpc = require('@grpc/grpc-js')
-const protoLoader = require('@grpc/proto-loader')
-const path = require('path')
-const sequelize = require('./DB_DATA')
-require('dotenv').config({ path: path.join(__dirname, './.env') })
-const { ApiError } = require('shared-for-store')
-const protoFile = path.join(__dirname, '../node_modules', 'proto-for-store', 'src', 'master-server', '.proto')
-import { getSchemes } from 'db-tables-for-store'
+import { resolve } from 'path'
+import { config } from 'dotenv'
+config({ path: resolve(__dirname, './.env') })
+import { ApiError } from 'shared-for-store'
+import { MasterDBProto } from 'proto-for-store'
 
-import IUserController from './controllers/user-controller'
-const tokensController = require('./controllers/user-controller') as IUserController.UserController
+import GetSequelize from './DB_DATA'
+import UserController from './controllers/user-controller'
 
-const packageDefinition = protoLoader.loadSync(protoFile, {
-   keepCase: true,
-   longs: String,
-   enums: String,
-   defaults: true,
-   oneofs: true,
-})
-const { Users } = grpc.loadPackageDefinition(packageDefinition).MasterServer
+export const sequelize = GetSequelize('production')
 
-export default getSchemes(sequelize)
+const { refresh, registration, forgotPassword, login, logout, writeToken } = new UserController(sequelize)
 
-async function main(): Promise<number> {
+async function main(): Promise<void> {
    try {
-      await sequelize.authenticate()
-      await sequelize.sync({ alter: false, logging: false, force: false })
-      const server = new grpc.Server()
-      server.addService(Users.service, {
-         registration: tokensController.registration,
-         writeToken: tokensController.writeToken,
-         login: tokensController.login,
-         logout: tokensController.logout,
-         refresh: tokensController.refresh,
-         forgotPassword: tokensController.forgotPassword,
-      })
-      await server.bindAsync(
-         `${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 8080}`,
-         grpc.ServerCredentials.createInsecure(),
-         () => {
+      await MasterDBProto.createMasterDBServer({
+         url: `${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 8080}`,
+         ServiceHandlers: {
+            Authorization: { refresh, login, logout, registration, forgotPassword, writeToken },
+         },
+         finalCallback: () => {
             console.log('master-server')
          },
-      )
-      return 0
-   } catch (error) {
-      console.log(error)
+      })
 
+      await sequelize.authenticate()
+      await sequelize.sync({ logging: false })
+   } catch (error) {
       throw ApiError.ServerError([error])
    }
 }

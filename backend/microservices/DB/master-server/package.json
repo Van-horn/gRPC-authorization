@@ -22,18 +22,18 @@
    "description": "",
    "dependencies": {
       "@grpc/grpc-js": "^1.11.1",
-      "@grpc/proto-loader": "^0.7.13",
-      "db-tables-for-store": "^1.0.0",
+      "db-for-store": "^1.0.4",
       "dotenv": "^16.4.5",
       "pg": "^8.12.0",
       "pg-hstore": "^2.3.4",
-      "proto-for-store": "^3.0.1",
+      "proto-for-store": "^3.0.12",
       "sequelize": "^6.37.3",
       "shared-for-store": "^1.1.3"
    },
    "devDependencies": {
       "@types/jest": "^29.5.12",
       "@types/node": "^20.14.13",
+      "@types/sequelize": "^4.28.20",
       "@typescript-eslint/eslint-plugin": "^7.14.1",
       "@typescript-eslint/parser": "^7.14.1",
       "eslint": "^8.57.0",
@@ -48,7 +48,6 @@
       "types-for-store": "^1.5.2",
       "typescript": "^5.4.5",
       "webpack": "^5.93.0",
-      "webpack-cli": "^5.1.4",
-      "webpack-node-externals": "^3.0.0"
+      "webpack-cli": "^5.1.4"
    }
 }
