@@ -54,12 +54,12 @@ services:
   #     - db-network
 
 
-  tokens-microservice:
-    build:
-      context: ./backend/microservices/tokens-microservice
-      dockerfile: Dockerfile
-    networks:
-      - microservices-network
+  # tokens-microservice:
+  #   build:
+  #     context: ./backend/microservices/tokens-microservice
+  #     dockerfile: Dockerfile
+  #   networks:
+  #     - microservices-network
 
 
   postgres:
@@ -72,24 +72,24 @@ services:
       - db-network
 
 
-  # master-server:
-  #   build:
-  #     context: ./backend/microservices/DB/master-server
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - db-network
-
-
-  slave-server:
+  master-server:
     build:
-      context: ./backend/microservices/DB/slave-server
+      context: ./backend/microservices/DB/master-server
       dockerfile: Dockerfile
     depends_on:
       - postgres
     networks:
       - db-network
+
+
+  # slave-server:
+  #   build:
+  #     context: ./backend/microservices/DB/slave-server
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - db-network
 
 
   # elasticsearch:

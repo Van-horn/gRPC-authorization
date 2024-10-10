@@ -12,7 +12,6 @@ export interface IUserController {
    logout: handleUnaryCall<Authorization.LogoutData, Authorization.LogoutRes>
    refresh: handleUnaryCall<Authorization.RefreshData, Authorization.RefreshRes>
    forgotPassword: handleUnaryCall<Authorization.ForgotPasswordData, Authorization.ForgotPasswordRes>
-   writeToken: handleUnaryCall<Authorization.WriteTokenData, Authorization.WriteTokenRes>
 }
 
 class UserController implements IUserController {
@@ -35,19 +34,7 @@ class UserController implements IUserController {
          if (error instanceof ApiError) callback(grpcErrorHandler(error), equivalence.emptyMasterServerUserCred)
       }
    }
-   writeToken = async (
-      call: ServerUnaryCall<Authorization.WriteTokenData, Authorization.WriteTokenRes>,
-      callback: sendUnaryData<Authorization.WriteTokenRes>,
-   ): Promise<void> => {
-      try {
-         if (!call.request?.user_id || !call.request?.refreshToken) throw ApiError.BadRequest('There are not all data')
 
-         const isWritten = await this.service.writeToken(call.request)
-         callback(null, { value: isWritten })
-      } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), { value: false })
-      }
-   }
    login = async (
       call: ServerUnaryCall<Authorization.LoginData, Authorization.LoginRes>,
       callback: sendUnaryData<Authorization.LoginRes>,
