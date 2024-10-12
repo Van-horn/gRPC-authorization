@@ -3,17 +3,18 @@ version: '3'
 networks:
   microservices-network:
     driver: bridge
+  auth-network:
+    driver: bridge
   db-network:
     driver: bridge
   client-network:
     driver: bridge
-  kibana-network:
+  logs:
     driver: bridge
   grafana-network:
     driver: bridge
 
 services:
-
 
   # frontend:
   #   build:
@@ -29,21 +30,32 @@ services:
 
   # nginx:
   #   build:
-  #     context: ./backend/microservices/nginx
+  #     context: ./backend/microservices/host-nginx
   #     dockerfile: Dockerfile
   #   ports:
   #     - 80:80
   #     - 443:443
   #   networks:
-  #     - microservices-network
+  #     - auth-network
   #     - client-network
   #   depends_on:
-  #     - authentication-microservice
+  #     - authorization-interceptor-microservice
 
-
-  # authentication-microservice:
+  # authorization-interceptor-microservice:
   #   build:
-  #     context: ./backend/microservices/authentication-microservice
+  #     context: ./backend/microservices/authorization/authorization-interceptor-microservice
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - authorization-microservice
+  #   ports:
+  #     - 8080:8080
+  #   networks:
+  #     - microservices-network
+  #     - auth-network
+
+  # authorization-microservice:
+  #   build:
+  #     context: ./backend/microservices/authorization/authorization-microservice
   #     dockerfile: Dockerfile
   #   depends_on:
   #     - tokens-microservice
@@ -52,76 +64,76 @@ services:
   #   networks:
   #     - microservices-network
   #     - db-network
+      
 
+  # postgres:
+  #   build:
+  #     context: ./backend/microservices/DB/postgres
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   # healthcheck:
+  #   #   test: ["CMD", "pg_isready"]
+  #   #   interval: 10s
+  #   #   timeout: 5s
+  #   #   retries: 5
+  #   networks:
+  #     - db-network
+
+  # master-server:
+  #   build:
+  #     context: ./backend/microservices/DB/master-server
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - db-network
+
+  # slave-server:
+  #   build:
+  #     context: ./backend/microservices/DB/slave-server
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - db-network
 
   # tokens-microservice:
   #   build:
-  #     context: ./backend/microservices/tokens-microservice
+  #     context: ./backend/microservices/authorization/tokens-microservice
   #     dockerfile: Dockerfile
   #   networks:
   #     - microservices-network
-
-
-  postgres:
-    build:
-      context: ./backend/microservices/DB/postgres
-      dockerfile: Dockerfile
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    # healthcheck:
-    #   test: ["CMD", "pg_isready"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
-    networks:
-      - db-network
-
-
-  master-server:
-    build:
-      context: ./backend/microservices/DB/master-server
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-    networks:
-      - db-network
-
-
-  slave-server:
-    build:
-      context: ./backend/microservices/DB/slave-server
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-    networks:
-      - db-network
-
-
-  # elasticsearch:
-  #   build:
-  #     context: ./backend/logs/elasticsearch
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - 9200:9200
-  #   networks:
-  #     - kibana-network
-
-
-  # kibana:
-  #   build:
-  #     context: ./backend/logs/kibana
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - 5601:5601
+  #     - logs
   #   depends_on:
   #     - elasticsearch
-  #   networks:
-  #     - kibana-network
+
+  elasticsearch:
+    build:
+      context: ./backend/microservices/monitoring/logs/elasticsearch
+      dockerfile: Dockerfile
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://elasticsearch:9200"]
+ 
+    networks:
+      - logs
+
+
+  kibana:
+    build:
+      context: ./backend/microservices/monitoring/logs/kibana
+      dockerfile: Dockerfile
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    networks:
+      - logs
 
 
   # prometheus:
   #   build:
-  #     context: ./backend/metrics/prometheus
+  #     context: ./backend/microservices/monitoring/metrics/prometheus
   #     dockerfile: Dockerfile
   #   ports:
   #     - 9090:9090
@@ -131,7 +143,7 @@ services:
 
   # grafana:
   #   build:
-  #     context: ./backend/metrics/grafana
+  #     context: ./backend/microservices/monitoring/metrics/grafana
   #     dockerfile: Dockerfile
   #   ports:
   #     - 9091:3000
@@ -139,8 +151,10 @@ services:
   #     - prometheus
   #   networks:
   #     - grafana-network
- 
+
 
 volumes:
-  postgres-data:
+  esdata:
+  # postgres-data:
+
 

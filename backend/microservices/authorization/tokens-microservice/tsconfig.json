@@ -1,0 +1,16 @@
+{
+   "compilerOptions": {
+      "module": "CommonJS",
+      "allowJs": true,
+      "strict": true,
+      "target": "ES6",
+      "moduleResolution": "Node",
+      "experimentalDecorators": true,
+      "sourceMap": true,
+      "outDir": "dist",
+      "esModuleInterop": true,
+      "resolveJsonModule": true
+   },
+   "include": ["src"],
+   "exclude": ["**/*.test.ts", "**/*.test.js"]
+}
