@@ -72,11 +72,6 @@ services:
   #     dockerfile: Dockerfile
   #   volumes:
   #     - postgres-data:/var/lib/postgresql/data
-  #   # healthcheck:
-  #   #   test: ["CMD", "pg_isready"]
-  #   #   interval: 10s
-  #   #   timeout: 5s
-  #   #   retries: 5
   #   networks:
   #     - db-network
 
@@ -112,9 +107,6 @@ services:
     build:
       context: ./backend/microservices/monitoring/logs/elasticsearch
       dockerfile: Dockerfile
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://elasticsearch:9200"]
- 
     networks:
       - logs
 
@@ -155,6 +147,6 @@ services:
 
 volumes:
   esdata:
-  # postgres-data:
+  postgres-data:
 
 
