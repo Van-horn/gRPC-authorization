@@ -34,7 +34,7 @@ async   accessTokenValidation(
       callback: sendUnaryData<ValidationResponse>
    ): Promise<void> {
       try {
-         if (!call.request.value) throw ApiError.BadRequest('No token')
+         if (!call.request.value) throw ApiError.BadRequest('There is not token')
 
          const result = tokensService.accessTokenValidation(call.request.value)
 
@@ -51,7 +51,7 @@ async   accessTokenValidation(
       callback: sendUnaryData<ValidationResponse>
    ): Promise<void> {
       try {
-         if (!call.request.value) throw ApiError.BadRequest('No token')
+         if (!call.request.value) throw ApiError.BadRequest('There is not token')
 
          const result = tokensService.refreshTokenValidation(call.request.value)
 

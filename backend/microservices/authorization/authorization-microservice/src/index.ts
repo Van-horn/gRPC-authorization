@@ -1,5 +1,4 @@
 import express from 'express'
-// import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { resolve } from 'path'
 import { ApiError } from 'shared-for-store'
@@ -15,12 +14,6 @@ import UserController from './controllers'
 const app = express()
 app.use(express.json())
 app.use(cookieParser())
-// app.use(
-//    cors({
-//       credentials: true,
-//       origin: [process.env.SERVICE ?? 'nginx'],
-//    })
-// )
 
 const router = express.Router()
 

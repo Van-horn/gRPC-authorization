@@ -28,7 +28,9 @@ async function main(): Promise<void> {
             },
          },
          url: '0.0.0.0:8080',
-        
+        finalCallback:()=>{
+            console.log("tokens-microservice");
+        }
       })
 
  } catch (error) {

@@ -22,29 +22,15 @@ class UserController implements IUserController {
    ): Promise<void> => {
       try {
          if (!(call.request?.user_id ?? call.request?.email)) throw ApiError.BadRequest('There are not data')
-            console.log("s-c");
-         const user = await this.service.userCredentials(call.request)
+
+            const user = await this.service.userCredentials(call.request)
 
          callback(null, user)
       } catch (error) {
          if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
-   // async getUserByEmail(
-   //    call: ServerUnaryCall<SlaveServer.IGetUserByEmailReqData, SlaveServer.IUser | null>,
-   //    callback: sendUnaryData<SlaveServer.IUser | null>,
-   // ): Promise<number> {
-   //    try {
-   //       if (!call.request?.email) throw ApiError.BadRequest('There are not all data')
 
-   //       const isUser = await userService.isUser(call.request)
-   //       callback(null, isUser)
-   //       return 0
-   //    } catch (error: typeof ApiError) {
-   //       callback(grpcErrorHandler(error), null)
-   //       return 1
-   //    }
-   // }
 }
 
 export default UserController

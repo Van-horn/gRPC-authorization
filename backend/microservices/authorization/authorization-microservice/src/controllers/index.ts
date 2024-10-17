@@ -17,13 +17,13 @@ import UserService from '../services'
 
 interface IUserController {
    registration:(
-      req: Request<ParamsDictionary, Credentials, RegistrationData>,
-      res: Response<Credentials>,
+      req: Request<ParamsDictionary, Omit<Credentials,"refreshToken">, RegistrationData>,
+      res: Response<Omit<Credentials,"refreshToken">>,
       next: NextFunction
    )=> Promise<void>
    login:(
-      req: Request<ParamsDictionary, Credentials, LoginData>,
-      res: Response<Credentials>,
+      req: Request<ParamsDictionary, Omit<Credentials,"refreshToken">, LoginData>,
+      res: Response<Omit<Credentials,"refreshToken">>,
       next: NextFunction
    )=> Promise<void>
    logout:(
@@ -32,13 +32,13 @@ interface IUserController {
       next: NextFunction
    )=> Promise<void>
    refresh : (
-      req: Request<ParamsDictionary, Credentials, RefreshData>,
-      res: Response<Credentials>,
+      req: Request<ParamsDictionary, Omit<Credentials,"refreshToken">, RefreshData>,
+      res: Response<Omit<Credentials,"refreshToken">>,
       next: NextFunction
    )=> Promise<void>
    forgotPassword :  (
-      req: Request<ParamsDictionary, Credentials, ForgotPasswordData>,
-      res: Response<Credentials>,
+      req: Request<ParamsDictionary, Omit<Credentials,"refreshToken">, ForgotPasswordData>,
+      res: Response<Omit<Credentials,"refreshToken">>,
       next: NextFunction
    )=> Promise<void> 
 }
@@ -63,13 +63,13 @@ class UserController implements IUserController {
    }
 
    registration = async (
-      req: Request<ParamsDictionary, Credentials, RegistrationData>,
-      res: Response<Credentials>,
+      req: Request<ParamsDictionary, Omit<Credentials,"refreshToken">, RegistrationData>,
+      res: Response<Omit<Credentials,"refreshToken">>,
       next: NextFunction
    ): Promise<void> => {
       try {
          const errors = validationResult(req)
-
+         
          if (!errors.isEmpty()) throw ApiError.BadRequest('Incorrect data', errors.array())
 
          const user = await this.service.registration(req.body)
@@ -81,14 +81,16 @@ class UserController implements IUserController {
             httpOnly: true,
          })
 
-         res.json(user)
+         const {refreshToken,...userForSending} =user
+
+         res.json(userForSending)
       } catch (error) {
          next(error)
       }
    }
    login = async (
-      req: Request<ParamsDictionary, Credentials, LoginData>,
-      res: Response<Credentials>,
+      req: Request<ParamsDictionary, Omit<Credentials,"refreshToken">, LoginData>,
+      res: Response<Omit<Credentials,"refreshToken">>,
       next: NextFunction
    ): Promise<void> => {
       try {
@@ -103,7 +105,9 @@ class UserController implements IUserController {
             httpOnly: true,
          })
 
-         res.json(user)
+         const {refreshToken,...userForSending} =user
+
+         res.json(userForSending)
       } catch (error) {
          next(error)
       }
@@ -128,8 +132,8 @@ class UserController implements IUserController {
       }
    }
    refresh = async (
-      req: Request<ParamsDictionary, Credentials, RefreshData>,
-      res: Response<Credentials>,
+      req: Request<ParamsDictionary, Omit<Credentials,"refreshToken">, RefreshData>,
+      res: Response<Omit<Credentials,"refreshToken">>,
       next: NextFunction
    ): Promise<void> => {
       try {
@@ -144,14 +148,16 @@ class UserController implements IUserController {
             httpOnly: true,
          })
 
-         res.json(user)
+         const {refreshToken,...userForSending} =user
+
+         res.json(userForSending)
       } catch (error) {
          next(error)
       }
    }
    forgotPassword = async (
-      req: Request<ParamsDictionary, Credentials, ForgotPasswordData>,
-      res: Response<Credentials>,
+      req: Request<ParamsDictionary, Omit<Credentials,"refreshToken">, ForgotPasswordData>,
+      res: Response<Omit<Credentials,"refreshToken">>,
       next: NextFunction
    ): Promise<void> => {
       try {
@@ -165,8 +171,9 @@ class UserController implements IUserController {
             maxAge: 30 * 24 * 60 * 60 * 1000,
             httpOnly: true,
          })
+         const {refreshToken,...userForSending} =user
 
-         res.json(user)
+         res.json(userForSending)
       } catch (error) {
          next(error)
       }
