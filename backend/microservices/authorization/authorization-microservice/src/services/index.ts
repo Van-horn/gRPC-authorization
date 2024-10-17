@@ -3,24 +3,22 @@ import { MasterDBProto, SlaveDBProto, TokensProto } from 'proto-for-store'
 import { ApiError } from 'shared-for-store'
 import {
    ForgotPasswordData,
-   ICredentials,
+   Credentials,
    LoginData,
    LogoutData,
    RefreshData,
    RegistrationData,
-} from 'types-for-store/dist/authentication-microservice'
-import { Users } from 'types-for-store/dist/slave-server'
-import { ITokens, TokenGenerationRequest } from 'types-for-store/dist/tokens-microservice'
-import { Authorization } from 'types-for-store/dist/master-server'
-
-type ICredentialsWithRefToken = ICredentials & { refreshToken: string }
+} from 'types-for-store/src/authentication-microservice'
+import { Users } from 'types-for-store/src/slave-server'
+import { GenerationResponse, GenerationRequest } from 'types-for-store/src/tokens-microservice'
+import { Authorization } from 'types-for-store/src/master-server'
 
 interface IUserService {
-   registration(props: RegistrationData): Promise<ICredentialsWithRefToken>
-   login(props: LoginData): Promise<ICredentialsWithRefToken>
+   registration(props: RegistrationData): Promise<Credentials>
+   login(props: LoginData): Promise<Credentials>
    logout(props: LogoutData): Promise<boolean>
-   refresh(props: RefreshData): Promise<ICredentialsWithRefToken>
-   forgotPassword(props: ForgotPasswordData): Promise<ICredentialsWithRefToken>
+   refresh(props: RefreshData): Promise<Credentials>
+   forgotPassword(props: ForgotPasswordData): Promise<Credentials>
 }
 
 interface UserServiceArgs {
@@ -40,7 +38,7 @@ class UserService implements IUserService {
       this.MasterDBProtoClient = MasterDBProtoClient
    }
 
-   registration = async ({ email, password, login }: RegistrationData): Promise<ICredentialsWithRefToken> => {
+   registration = async ({ email, password, login }: RegistrationData): Promise<Credentials> => {
       try {
          const candidate = await this.SlaveDBProtoClient.UsersUserCredentials<
             Users.UserCredGetData,
@@ -51,43 +49,43 @@ class UserService implements IUserService {
 
          const hashPassword = await hash(password, 3)
 
-         const tokens = await this.TokensClient.TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
+         const tokens = await this.TokensClient.TokensGenerateTokens<GenerationRequest, GenerationResponse>({})
 
-         if (!tokens?.refreshToken) throw ApiError.ServerError()
+         if (!tokens) throw ApiError.ServerError()
 
-         const userId = await this.MasterDBProtoClient.AuthorizationRegistration<
+         const user = await this.MasterDBProtoClient.AuthorizationRegistration<
             Authorization.RegistrationData,
             Authorization.RegistrationRes
          >({ email, login, refreshToken: tokens.refreshToken, password: hashPassword })
 
-         if (!userId?.user_id) throw ApiError.ServerError()
+         if (!user) throw ApiError.ServerError()
 
          return {
             ...tokens,
             email,
             login,
-            user_id: userId.user_id,
+            user_id: user.user_id,
          }
       } catch (error) {
          if (error instanceof ApiError) throw error
          throw ApiError.ServerError([error])
       }
    }
-   login = async ({ password, email }: LoginData): Promise<ICredentialsWithRefToken> => {
+   login = async ({ password, email }: LoginData): Promise<Credentials> => {
       try {
          const dbUser = await this.SlaveDBProtoClient.UsersUserCredentials<
             Users.UserCredGetData,
             Users.UserCredentials
          >({ email })
 
-         if (dbUser?.user_id === -1 || !dbUser?.password) throw ApiError.BadRequest('There is not user')
+         if (!dbUser) throw ApiError.BadRequest('There is not user')
 
          const isPasswordEquals = await compare(password, dbUser.password)
          if (!isPasswordEquals) throw ApiError.BadRequest('Invalid email or password')
 
-         const tokens = await this.TokensClient.TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
+         const tokens = await this.TokensClient.TokensGenerateTokens<GenerationRequest, GenerationResponse>({})
 
-         if (!tokens?.refreshToken) throw ApiError.ServerError()
+         if (!tokens) throw ApiError.ServerError()
 
          const isLogin = await this.MasterDBProtoClient.AuthorizationLogin<
             Authorization.LoginData,
@@ -96,7 +94,7 @@ class UserService implements IUserService {
             user_id: dbUser.user_id,
             refreshToken: tokens.refreshToken,
          })
-         if (!isLogin?.value) throw ApiError.ServerError()
+         if (!isLogin) throw ApiError.ServerError()
 
          return { ...tokens, email, user_id: dbUser.user_id, login: dbUser.login }
       } catch (error) {
@@ -111,7 +109,7 @@ class UserService implements IUserService {
             Authorization.LogoutRes
          >({ user_id })
 
-         if (!isLogout?.value) throw ApiError.ServerError()
+         if (!isLogout) throw ApiError.ServerError()
 
          return true
       } catch (error) {
@@ -119,25 +117,25 @@ class UserService implements IUserService {
          throw ApiError.ServerError([error])
       }
    }
-   refresh = async ({ user_id }: RefreshData): Promise<ICredentialsWithRefToken> => {
+   refresh = async ({ user_id }: RefreshData): Promise<Credentials> => {
       try {
          const dbUser = await this.SlaveDBProtoClient.UsersUserCredentials<
             Users.UserCredGetData,
             Users.UserCredentials
          >({ user_id })
 
-         if (dbUser?.user_id === -1 || !dbUser) throw ApiError.UnAthorizedError()
+         if (!dbUser) throw ApiError.UnAthorizedError()
 
-         const tokens = await this.TokensClient.TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
+         const tokens = await this.TokensClient.TokensGenerateTokens<GenerationRequest, GenerationResponse>({})
 
-         if (!tokens?.refreshToken) throw ApiError.ServerError()
+         if (!tokens) throw ApiError.ServerError()
 
          const isRefresh = await this.MasterDBProtoClient.AuthorizationRefresh<
             Authorization.RefreshData,
             Authorization.RefreshRes
          >({ user_id, refreshToken: tokens.refreshToken })
 
-         if (!isRefresh?.value) throw ApiError.ServerError()
+         if (!isRefresh) throw ApiError.ServerError()
 
          return { ...tokens, user_id, email: dbUser.email, login: dbUser.login }
       } catch (error) {
@@ -145,7 +143,7 @@ class UserService implements IUserService {
          throw ApiError.ServerError([error])
       }
    }
-   forgotPassword = async ({ password, email }: ForgotPasswordData): Promise<ICredentialsWithRefToken> => {
+   forgotPassword = async ({ password, email }: ForgotPasswordData): Promise<Credentials> => {
       try {
          const dbUser = await this.SlaveDBProtoClient.UsersUserCredentials<
             Users.UserCredGetData,
@@ -153,11 +151,11 @@ class UserService implements IUserService {
          >({
             email,
          })
-         if (dbUser?.user_id === -1 || !dbUser) throw ApiError.BadRequest('There is not user')
+         if (!dbUser) throw ApiError.BadRequest('There is not user')
 
-         const tokens = await this.TokensClient.TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
+         const tokens = await this.TokensClient.TokensGenerateTokens<GenerationRequest, GenerationResponse>({})
 
-         if (!tokens?.refreshToken) throw ApiError.ServerError()
+         if (!tokens) throw ApiError.ServerError()
 
          const hashPassword = await hash(password, 3)
 
@@ -166,7 +164,7 @@ class UserService implements IUserService {
             Authorization.ForgotPasswordRes
          >({ user_id: dbUser.user_id, password: hashPassword, refreshToken: tokens.refreshToken })
 
-         if (!isForPas?.value) throw ApiError.ServerError()
+         if (!isForPas) throw ApiError.ServerError()
 
          return { ...tokens, email, user_id: dbUser.user_id, login: dbUser.login }
       } catch (error) {

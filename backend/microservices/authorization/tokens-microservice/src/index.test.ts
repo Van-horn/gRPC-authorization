@@ -1,11 +1,11 @@
 import { ApiError } from 'shared-for-store'
 import { TokensProto } from 'proto-for-store'
 import {
-   ITokens,
    ValidationRequest,
    ValidationResponse,
-   TokenGenerationRequest,
-} from 'types-for-store/dist/tokens-microservice'
+   GenerationRequest,
+   GenerationResponse,
+} from 'types-for-store/src/tokens-microservice'
 import { Server } from '@grpc/grpc-js'
 
 import tokensController from './controllers/tokens-controller'
@@ -35,7 +35,7 @@ test('tokens-microservice', async () => {
    const { TokensGenerateTokens, TokensAccessTokenValidation, TokensRefreshTokenValidation } =
       await TokensProto.createTokensClient({ url: '0.0.0.0:5000' })
 
-   const tokens = await TokensGenerateTokens<TokenGenerationRequest, ITokens>({})
+   const tokens = await TokensGenerateTokens<GenerationRequest, GenerationResponse>({})
 
    if (tokens) {
       expect(Object.keys(tokens)).toHaveLength(2)

@@ -1,9 +1,9 @@
 import { MySequelize } from 'db-for-store/dist/tables'
 import { ApiError } from 'shared-for-store'
-import { Authorization } from 'types-for-store/dist/master-server'
+import { Authorization } from 'types-for-store/src/master-server'
 
 interface IUserService {
-   registration(props: Authorization.RegistrationData): Promise<Authorization.ICredentials>
+   registration(props: Authorization.RegistrationData): Promise<Authorization.RegistrationRes>
    login(props: Authorization.LoginData): Promise<boolean>
    logout(props: Authorization.LogoutData): Promise<boolean>
    refresh(props: Authorization.RefreshData): Promise<boolean>
@@ -39,7 +39,7 @@ class UserService implements IUserService {
    registration = async ({
       refreshToken,
       ...props
-   }: Authorization.RegistrationData): Promise<Authorization.ICredentials> => {
+   }: Authorization.RegistrationData): Promise<Authorization.RegistrationRes> => {
       try {
          const {
             dataValues: { user_id },

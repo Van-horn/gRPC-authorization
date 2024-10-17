@@ -1,15 +1,15 @@
 import { sign, verify } from 'jsonwebtoken'
-import { ITokens, TokenGenerationRequest } from 'types-for-store/dist/tokens-microservice'
+import { GenerationResponse, GenerationRequest } from 'types-for-store/src/tokens-microservice'
 import { ApiError } from 'shared-for-store'
 
 export interface ITokensService {
-   generateTokens(value: TokenGenerationRequest): ITokens
+   generateTokens(value: GenerationRequest): GenerationResponse
    accessTokenValidation(accessToken: string): boolean
    refreshTokenValidation(refreshToken: string): boolean
 }
 
 class TokensService implements ITokensService {
-   generateTokens(value: TokenGenerationRequest): ITokens {
+   generateTokens(value: GenerationRequest): GenerationResponse {
       try {
          const accessToken = sign(value, process.env.JWT_ACCESS ?? 'JWT_ACCESS', {
             expiresIn: '10m',

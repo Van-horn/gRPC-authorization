@@ -3,11 +3,11 @@ WORKDIR /app
 
 RUN apk add --no-cache bash
 
-COPY package*.json ./
+COPY package*.json .
 
-COPY webpack.config.js ./
-COPY tsconfig.json ./
-COPY ./src ./src
+COPY webpack.config.js .
+COPY tsconfig.json .
+COPY src ./src
 
 RUN npm ci
 RUN npm run build

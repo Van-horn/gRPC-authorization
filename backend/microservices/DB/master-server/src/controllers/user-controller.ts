@@ -1,7 +1,6 @@
 import { ApiError, grpcErrorHandler } from 'shared-for-store'
 import { ServerUnaryCall, sendUnaryData, handleUnaryCall } from '@grpc/grpc-js'
-import { Authorization } from 'types-for-store/dist/master-server'
-import equivalence from 'types-for-store'
+import { Authorization } from 'types-for-store/src/master-server'
 import { MySequelize } from 'db-for-store/dist/tables'
 
 import UserService from '../services/user-service'
@@ -29,9 +28,10 @@ class UserController implements IUserController {
             throw ApiError.BadRequest('There are not all data')
 
          const user = await this.service.registration(call.request)
+
          callback(null, user)
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), equivalence.emptyMasterServerUserCred)
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
 
@@ -45,7 +45,7 @@ class UserController implements IUserController {
          const isLogin = await this.service.login(call.request)
          callback(null, { value: isLogin })
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), { value: false })
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
    logout = async (
@@ -58,7 +58,7 @@ class UserController implements IUserController {
          const isLogout = await this.service.logout(call.request)
          callback(null, { value: isLogout })
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), { value: false })
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
    refresh = async (
@@ -71,7 +71,7 @@ class UserController implements IUserController {
          const isRefresh = await this.service.refresh(call.request)
          callback(null, { value: isRefresh })
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), { value: false })
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
 
@@ -86,7 +86,7 @@ class UserController implements IUserController {
          const isForPas = await this.service.forgotPassword(call.request)
          callback(null, { value: isForPas })
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error), { value: false })
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
 }

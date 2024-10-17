@@ -1,4 +1,4 @@
-curl -X PUT "http://elasticsearch:9200/index" -H 'Content-Type: application/json' -d '{
+curl -X PUT "/index" -H 'Content-Type: application/json'  -d '{
   "settings": {
     "number_of_shards": 1,
     "number_of_replicas": 0

@@ -3,10 +3,10 @@ WORKDIR /app
 
 RUN apk add --no-cache bash
 
-COPY package*.json ./
+COPY package*.json .
 
-COPY webpack.config.js ./
-COPY tsconfig.json ./
+COPY webpack.config.js .
+COPY tsconfig.json .
 COPY ./src ./src
 
 RUN npm ci
@@ -26,4 +26,5 @@ RUN chmod +x /usr/local/bin/wait-for-it.sh
 
 EXPOSE 8080
 
+# CMD [ "node", "dist/index.js"]
 CMD ["/usr/local/bin/wait-for-it.sh", "postgres:5432", "--", "node", "dist/index.js"]
