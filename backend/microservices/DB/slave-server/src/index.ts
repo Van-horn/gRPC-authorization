@@ -20,9 +20,7 @@ async function main(): Promise<void> {
                userCredentials: userCredentials,
             },
          },
-         finalCallback: () => {
-            console.log('slave-server')
-         },
+      
       })
 
       await sequelize.authenticate()

@@ -17,10 +17,8 @@ async function main(): Promise<void> {
          url: `${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 8080}`,
          ServiceHandlers: {
             Authorization: { refresh, login, logout, registration, forgotPassword },
-         },
-         finalCallback: () => {
-            console.log('master-server')
-         },
+         }
+      
       })
 
       await sequelize.authenticate()

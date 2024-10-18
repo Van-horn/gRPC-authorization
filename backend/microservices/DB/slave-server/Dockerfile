@@ -26,5 +26,4 @@ RUN chmod +x /usr/local/bin/wait-for-it.sh
 
 EXPOSE 8080
 
-# CMD [ "node", "dist/index.js"]
 CMD ["/usr/local/bin/wait-for-it.sh", "postgres:5432", "--", "node", "dist/index.js"]

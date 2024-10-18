@@ -102,8 +102,17 @@ class UserService implements IUserService {
          throw ApiError.ServerError([error])
       }
    }
-   logout = async ({ user_id }: LogoutData): Promise<boolean> => {
+   logout = async ({ user_id,refreshTokenFromCookie }: LogoutData &{refreshTokenFromCookie:string}): Promise<boolean> => {
       try {
+         const dbUser = await this.SlaveDBProtoClient.UsersUserCredentials<
+            Users.UserCredGetData,
+            Users.UserCredentials
+         >({ user_id })
+
+         if (!dbUser) throw ApiError.BadRequest('There is not user')
+
+         if(dbUser.refreshToken !== refreshTokenFromCookie ) throw ApiError.BadRequest("No access rights")
+
          const isLogout = await this.MasterDBProtoClient.AuthorizationLogout<
             Authorization.LogoutData,
             Authorization.LogoutRes

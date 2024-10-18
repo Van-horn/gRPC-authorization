@@ -45,7 +45,7 @@ async function main(): Promise<void> {
       app.use(errorMiddleware)
 
       app.listen(process.env.PORT ?? 8080, () => {
-         console.log(`authorization-microservice`)
+      
       })
    } catch (error) {
       throw ApiError.ServerError([error])

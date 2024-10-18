@@ -19,22 +19,6 @@ class UserService implements IUserService {
       this.Tables = this.sequelize.models
    }
 
-   private writeToken = async ({ user_id, refreshToken }: Authorization.WriteTokenData): Promise<boolean> => {
-      try {
-         await this.Tables.Tokens.create({ user_id, refresh_token: refreshToken })
-         return true
-      } catch (error) {
-         throw ApiError.ServerError([error])
-      }
-   }
-   private updateToken = async ({ user_id, refreshToken }: Authorization.WriteTokenData): Promise<boolean> => {
-      try {
-         await this.Tables.Tokens.update({ refresh_token: refreshToken }, { where: { user_id } })
-         return true
-      } catch (error) {
-         throw ApiError.ServerError([error])
-      }
-   }
 
    registration = async ({
       refreshToken,
@@ -45,7 +29,7 @@ class UserService implements IUserService {
             dataValues: { user_id },
          } = await this.Tables.Users.create(props)
 
-         await this.writeToken({ user_id, refreshToken })
+         await this.Tables.Tokens.create({ user_id, refresh_token: refreshToken })
          return { user_id }
       } catch (error) {
          throw ApiError.ServerError([error])
@@ -69,9 +53,9 @@ class UserService implements IUserService {
          throw ApiError.ServerError([error])
       }
    }
-   refresh = async (props: Authorization.RefreshData): Promise<boolean> => {
+   refresh = async ({ user_id, refreshToken }: Authorization.RefreshData): Promise<boolean> => {
       try {
-         await this.updateToken(props)
+         await this.Tables.Tokens.upsert({ refresh_token: refreshToken, user_id })
          return true
       } catch (error) {
          throw ApiError.ServerError([error])
@@ -80,7 +64,7 @@ class UserService implements IUserService {
    forgotPassword = async ({ refreshToken, user_id, password }: Authorization.ForgotPasswordData): Promise<boolean> => {
       try {
          await this.Tables.Users.update({ password }, { where: { user_id } })
-         await this.updateToken({ refreshToken, user_id })
+         await this.Tables.Tokens.upsert({ refresh_token: refreshToken, user_id })
 
          return true
       } catch (error) {

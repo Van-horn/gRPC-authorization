@@ -12,6 +12,7 @@ import {
 } from 'types-for-store/src/authentication-microservice'
 import { ApiError } from 'shared-for-store'
 import { TokensProto, SlaveDBProto, MasterDBProto } from 'proto-for-store'
+import { ValidationRequest, ValidationResponse } from 'types-for-store/src/tokens-microservice'
 
 import UserService from '../services'
 
@@ -76,11 +77,11 @@ class UserController implements IUserController {
 
          if (!user) throw ApiError.ServerError()
 
-         res.cookie('refreshToken', user.refreshToken, {
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-            httpOnly: true,
-         })
-
+            res.cookie('refreshToken', user.refreshToken, {
+               maxAge: 30 * 24 * 60 * 60 * 1000,
+               httpOnly: true,
+            })
+          
          const {refreshToken,...userForSending} =user
 
          res.json(userForSending)
@@ -94,7 +95,7 @@ class UserController implements IUserController {
       next: NextFunction
    ): Promise<void> => {
       try {
-         if (!req.body) throw ApiError.BadRequest('There is not all data')
+         if (!req.body?.email || !req.body?.password) throw ApiError.BadRequest('There is not all data')
 
          const user = await this.service.login(req.body)
 
@@ -118,9 +119,17 @@ class UserController implements IUserController {
       next: NextFunction
    ): Promise<void> => {
       try {
-         if (!req.body) throw ApiError.BadRequest('There is not all data')
+         if (!req.body?.user_id || !req.body?.accessToken) throw ApiError.BadRequest('There is not all data')
 
-         const isLogout = await this.service.logout(req.body)
+         const refreshTokenFromCookie = req.cookies?.refreshToken
+
+         if(!refreshTokenFromCookie) throw ApiError.UnAthorizedError()   
+
+         const isAccessToken = await this.TokensClient.TokensAccessTokenValidation<ValidationRequest,ValidationResponse>({value : req.body.accessToken})
+
+         if(!isAccessToken?.value) throw ApiError.UnAthorizedError()
+           
+         const isLogout = await this.service.logout({...req.body, refreshTokenFromCookie})
 
          if (!isLogout) throw ApiError.ServerError()
 
@@ -137,7 +146,15 @@ class UserController implements IUserController {
       next: NextFunction
    ): Promise<void> => {
       try {
-         if (!req.body) throw ApiError.BadRequest('There is not all data')
+         if (!req.body?.user_id) throw ApiError.BadRequest('There is not all data')
+
+         const refreshTokenFromCookie = req.cookies?.refreshToken
+
+         if(!refreshTokenFromCookie) throw ApiError.UnAthorizedError()
+
+         const isRefreshToken =await this.TokensClient.TokensRefreshTokenValidation<ValidationRequest,ValidationResponse>({value : refreshTokenFromCookie})
+
+         if(!isRefreshToken?.value) throw ApiError.UnAthorizedError()
 
          const user = await this.service.refresh(req.body)
 
@@ -161,7 +178,7 @@ class UserController implements IUserController {
       next: NextFunction
    ): Promise<void> => {
       try {
-         if (!req.body) throw ApiError.BadRequest('There is not all data')
+         if (!req.body?.email || !req.body?.password) throw ApiError.BadRequest('There is not all data')
 
          const user = await this.service.forgotPassword(req.body)
 

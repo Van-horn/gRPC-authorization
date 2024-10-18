@@ -27,10 +27,8 @@ async function main(): Promise<void> {
                refreshTokenValidation: tokensController.refreshTokenValidation,
             },
          },
-         url: '0.0.0.0:8080',
-        finalCallback:()=>{
-            console.log("tokens-microservice");
-        }
+         url: '0.0.0.0:8080'
+     
       })
 
  } catch (error) {
