@@ -1,0 +1,60 @@
+How to launch:
+1) git clone https://github.com/Van-horn/gRPC-authorization
+2) cd .\gRPC-authorization\  
+3) Run docker engine
+4)"docker-compose up --build"
+
+http - http://localhost/authorization/*
+https - https://localhost/authorization/*
+
+*
+1) /registration
+method POST
+Headers not needed
+Body 
+{
+  "login": string,
+  "email": string,
+  "password": string
+}
+
+2) /login
+method PATCH
+Headers not needed
+Body 
+{
+  "email": string,
+  "password": string
+}
+
+3) /logout
+method PATCH
+Body 
+{
+  "user_id": number,
+  "accessToken: string
+}
+
+4) /refresh
+method PATCH
+Body 
+{
+  "user_id": number,
+}
+
+5) /forgotPassword
+method PATCH
+Body 
+{
+  "email": string,
+  "password": string
+}
+
+
+
+
+
+
+
+
+
