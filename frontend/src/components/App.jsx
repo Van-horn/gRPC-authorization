@@ -8,11 +8,11 @@ import SingUpForm from "./SingUpForm/SingUpForm"
 function App() {
 	return (
 		<Routes>
-			<Route element={<LogInForm />} path="/authorization/logIn" />
-			<Route element={<SingUpForm />} path="/authorization/singUp" />
+			<Route element={<LogInForm />} path="/logIn" />
+			<Route element={<SingUpForm />} path="/singUp" />
 			<Route
 				element={<ForgotPasswordForm />}
-				path="/authorization/forgotPassword"
+				path="/forgotPassword"
 			/>
 		</Routes>
 	)

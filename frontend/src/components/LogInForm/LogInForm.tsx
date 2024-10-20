@@ -4,37 +4,22 @@ import { Link } from "react-router-dom"
 
 import styles from "./LogInForm.module.scss"
 // import { useAppDispatch, useAppSelector } from '../../../hooks/redux'
-import { useInput } from "../../hooks/input"
-import preventDefault from "../../utils/preventDefault"
-import PasswordEye from "../../UI/passwordEye"
+import { useTextInput } from "../../hooks/input"
+import formPreventDefault from "../../utils/formPreventDefault"
 
-export interface ILogInData {
+export interface LogInData {
 	email: string
 	password: string
+	[key: string]: string;
 }
-const initialState: ILogInData = {
+const initialState: LogInData = {
 	email: "",
 	password: "",
 }
 const LogInForm: FC<Record<never, never>> = () => {
 	//  const dispatch = useAppDispatch()
 	//  const navigate = useNavigate()
-	const preventDefaultHandler = useCallback(preventDefault, [])
 
-	const {
-		state: { email, password },
-		onChange,
-		resetInputs,
-	} = useInput<ILogInData>(initialState)
-	const emailHandler = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) => onChange("email", e.target.value),
-		[onChange],
-	)
-	const passwordHandler = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) =>
-			onChange("password", e.target.value),
-		[onChange],
-	)
 
 	const [passwordEye, setPasswordEye] = useState<boolean>(true)
 	const passwordEyeHandler = useCallback(
@@ -43,7 +28,7 @@ const LogInForm: FC<Record<never, never>> = () => {
 	)
 	return (
 		<main className={styles.main}>
-			<form className={styles.form} onSubmit={preventDefaultHandler}>
+			<form className={styles.form} onSubmit={formPreventDefault}>
 				{/* <span className={styles.formName}>LogIn</span>
 				<div className={styles.inputs}>
 					<NormaInput
@@ -88,7 +73,7 @@ const LogInForm: FC<Record<never, never>> = () => {
 				>
 					<span className={styles.lableForgot}>Forgot password :</span>
 					<Link
-						to="/authorization/forgotPassword"
+						to="/forgotPassword"
 						className={styles.refForgot}>
 						Replace
 					</Link>
@@ -97,7 +82,7 @@ const LogInForm: FC<Record<never, never>> = () => {
 				//  className={styles.regAlternative}
 				>
 					<span className={styles.lableReg}>I have not an account :</span>
-					<Link to="/authorization/singUp" className={styles.refReg}>
+					<Link to="/singUp" className={styles.refReg}>
 						SingUp
 					</Link>
 				</div>

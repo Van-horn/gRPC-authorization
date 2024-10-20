@@ -1,9 +1,10 @@
 @import "./mixins/flex.scss";
-
+@import "./variables/index.scss";
 
 #root {
     width: inherit;
     height: inherit;
+    background-color: $mainbg;
     @include full-center_j_d(center, column);
 }
 

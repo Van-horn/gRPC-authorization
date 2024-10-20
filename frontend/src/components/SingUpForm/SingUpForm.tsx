@@ -1,18 +1,18 @@
 import { FC, useState, useCallback, useMemo } from "react"
 import { Link } from "react-router-dom"
-import { useInput } from "../../hooks/input"
-// import { NormaInput, FilledButton } from "my-react-ui-kit"
+import { useTextInput } from "../../hooks/input"
+import { OnePieceButton,OnePieceInput } from "my-react-ui-kit"
 
 import styles from "./SingUpForm.module.scss"
 // import { useAppDispatch, useAppSelector } from '../../../hooks/redux'
-import preventDefault from "../../utils/preventDefault"
-import PasswordEye from "../../UI/passwordEye"
+import formPreventDefault from "../../utils/formPreventDefault"
 import { ChangeEvent } from "react"
 
 export interface ISingUpData {
 	login: string
 	email: string
 	password: string
+	[key: string]: string;
 }
 const initialState: ISingUpData = {
 	login: "",
@@ -20,26 +20,25 @@ const initialState: ISingUpData = {
 	password: "",
 }
 const SingUpForm: FC<Record<never, never>> = () => {
-	const preventDefaultHandler = useCallback(preventDefault, [])
 
 	const {
 		state: { login, email, password },
-		onChange,
-		resetInputs,
-	} = useInput<ISingUpData>(initialState)
-	const loginHandler = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) => onChange("login", e.target.value),
-		[onChange],
-	)
-	const emailHandler = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) => onChange("email", e.target.value),
-		[onChange],
-	)
-	const passwordHandler = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) =>
-			onChange("password", e.target.value),
-		[onChange],
-	)
+		// onChange,
+		
+	} = useTextInput<ISingUpData>(initialState)
+	// const loginHandler = useCallback(
+	// 	(e: ChangeEvent<HTMLInputElement>) => onChange("login", e.target.value),
+	// 	[onChange],
+	// )
+	// const emailHandler = useCallback(
+	// 	(e: ChangeEvent<HTMLInputElement>) => onChange("email", e.target.value),
+	// 	[onChange],
+	// )
+	// const passwordHandler = useCallback(
+	// 	(e: ChangeEvent<HTMLInputElement>) =>
+	// 		onChange("password", e.target.value),
+	// 	[onChange],
+	// )
 
 	const [passwordEye, setPasswordEye] = useState<boolean>(true)
 	const passwordEyeHandler = useCallback(
@@ -48,7 +47,7 @@ const SingUpForm: FC<Record<never, never>> = () => {
 	)
 	return (
 		<main className={styles.main}>
-			<form className={styles.form} onSubmit={preventDefaultHandler}>
+			<form className={styles.form} onSubmit={formPreventDefault}>
 				{/* <span className={styles.formName}>SingUp</span>
 				<div className={styles.inputs}>
 					<NormaInput
@@ -103,7 +102,7 @@ const SingUpForm: FC<Record<never, never>> = () => {
 					<span className={styles.lableReg}>
 						I already have an account :
 					</span>
-					<Link to="/authorization/logIn" className={styles.refReg}>
+					<Link to="/logIn" className={styles.refReg}>
 						LogIn
 					</Link>
 				</div>
@@ -112,7 +111,7 @@ const SingUpForm: FC<Record<never, never>> = () => {
 				>
 					<span className={styles.lableForgot}>Forgot password :</span>
 					<Link
-						to="/authorization/forgotPassword"
+						to="/forgotPassword"
 						className={styles.refForgot}>
 						Replace
 					</Link>
