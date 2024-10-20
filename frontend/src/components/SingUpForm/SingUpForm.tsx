@@ -1,7 +1,7 @@
 import { FC, useState, useCallback, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { useInput } from "../../hooks/input"
-import { NormaInput, FilledButton } from "my-react-ui-kit"
+// import { NormaInput, FilledButton } from "my-react-ui-kit"
 
 import styles from "./SingUpForm.module.scss"
 // import { useAppDispatch, useAppSelector } from '../../../hooks/redux'
@@ -49,7 +49,7 @@ const SingUpForm: FC<Record<never, never>> = () => {
 	return (
 		<main className={styles.main}>
 			<form className={styles.form} onSubmit={preventDefaultHandler}>
-				<span className={styles.formName}>SingUp</span>
+				{/* <span className={styles.formName}>SingUp</span>
 				<div className={styles.inputs}>
 					<NormaInput
 						type="text"
@@ -94,7 +94,7 @@ const SingUpForm: FC<Record<never, never>> = () => {
 						className={styles.buttonReset}>
 						Reset
 					</FilledButton>
-				</div>
+				</div> */}
 			</form>
 			<div className={styles.alternatives}>
 				<div

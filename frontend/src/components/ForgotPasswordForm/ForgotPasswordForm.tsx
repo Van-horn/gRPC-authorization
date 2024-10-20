@@ -1,5 +1,5 @@
 import { useState, useCallback, FC, ChangeEvent } from "react"
-import { NormaInput, FilledButton } from "my-react-ui-kit"
+// import { NormaInput, FilledButton } from "my-react-ui-kit"
 import { Link } from "react-router-dom"
 
 import styles from "./ForgotPasswordForm.module.scss"
@@ -47,7 +47,7 @@ const ForgotPasswordForm: FC<Record<never, never>> = () => {
 		<main className={styles.main}>
 			<form className={styles.form} onSubmit={preventDefaultHandler}>
 				<span className={styles.formName}>Replace password</span>
-				<div className={styles.inputs}>
+				{/* <div className={styles.inputs}>
 					<NormaInput
 						type="email"
 						title=""
@@ -84,7 +84,7 @@ const ForgotPasswordForm: FC<Record<never, never>> = () => {
 						className={styles.buttonReset}>
 						Reset
 					</FilledButton>
-				</div>
+				</div> */}
 			</form>
 			<div className={styles.alternatives}>
 				<div
