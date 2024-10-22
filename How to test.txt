@@ -10,7 +10,6 @@ https - https://localhost/authorization/*
 *
 1) /registration
 method POST
-Headers not needed
 Body 
 {
   "login": string,
@@ -20,7 +19,6 @@ Body
 
 2) /login
 method PATCH
-Headers not needed
 Body 
 {
   "email": string,
