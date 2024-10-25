@@ -2,12 +2,18 @@
 @import "./variables/index.scss";
 
 #root {
-    width: inherit;
-    height: inherit;
-    background-color: $mainbg;
-    @include full-center_j_d(center, column);
+  width: inherit;
+  height: inherit;
+  background-color: $mainbg;
+  @include full-center_j_d(center, column);
 }
 
+.main {
+  flex-grow: 1;
+  @include full-center_j_d(center, column);
+  align-items: start;
+  //   font-size: clamp(0em, 1vw, 2em);
+}
 // main,
 // footer,
 // header {

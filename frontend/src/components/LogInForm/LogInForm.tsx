@@ -1,94 +1,107 @@
-import { useState, useCallback, ChangeEvent, FC } from "react"
-import { Link } from "react-router-dom"
-// import { NormaInput, FilledButton } from "my-react-ui-kit"
+import { useState, useCallback, FC } from "react";
+import { Link } from "react-router-dom";
+import { OnePieceButton, OnePieceInput } from "my-react-ui-kit";
+import styled from "styled-components";
 
-import styles from "./LogInForm.module.scss"
+import styles from "./LogInForm.module.scss";
 // import { useAppDispatch, useAppSelector } from '../../../hooks/redux'
-import { useTextInput } from "../../hooks/input"
-import formPreventDefault from "../../utils/formPreventDefault"
+import { useTextInput } from "../../hooks/input";
+import formPreventDefault from "../../utils/formPreventDefault";
+import { themeColor, fontColor } from "../../sass/variables";
 
-export interface LogInData {
-	email: string
-	password: string
-	[key: string]: string;
+interface LoginFormData {
+  email: string;
+  password: string;
+
+  [key: string]: string;
 }
-const initialState: LogInData = {
-	email: "",
-	password: "",
-}
+
+const RefLabel = styled.span``;
+
 const LogInForm: FC<Record<never, never>> = () => {
-	//  const dispatch = useAppDispatch()
-	//  const navigate = useNavigate()
+  // const dispatch = useAppDispatch()
+  // const navigate = useNavigate()
 
+  const LogInFormData: LoginFormData = {
+    email: "",
+    password: "",
+  };
 
-	const [passwordEye, setPasswordEye] = useState<boolean>(true)
-	const passwordEyeHandler = useCallback(
-		() => setPasswordEye((prev) => !prev),
-		[],
-	)
-	return (
-		<main className={styles.main}>
-			<form className={styles.form} onSubmit={formPreventDefault}>
-				{/* <span className={styles.formName}>LogIn</span>
-				<div className={styles.inputs}>
-					<NormaInput
-						type="email"
-						value={email}
-						title=""
-						required
-						onChange={emailHandler}
-						placeholder="email..."
-						className={styles.input}
-					/>
-					<NormaInput
-						type={passwordEye ? "password" : "text"}
-						value={password}
-						title=""
-						required
-						onChange={passwordHandler}
-						placeholder="password..."
-						className={styles.input}
-					/>
-					<PasswordEye
-						onChange={passwordEyeHandler}
-						value={passwordEye}
-						className={styles.passwordEye}
-					/>
-				</div>
-				<div className={styles.formButtons}>
-					<FilledButton type="submit" className={styles.buttonSubmit}>
-						LogIn
-					</FilledButton>
-					<FilledButton
-						type="reset"
-						onClick={resetInputs}
-						className={styles.buttonReset}>
-						Reset
-					</FilledButton>
-				</div> */}
-			</form>
-			<div className={styles.alternatives}>
-				<div
-				//  className={styles.forgotAlternative}
-				>
-					<span className={styles.lableForgot}>Forgot password :</span>
-					<Link
-						to="/forgotPassword"
-						className={styles.refForgot}>
-						Replace
-					</Link>
-				</div>
-				<div
-				//  className={styles.regAlternative}
-				>
-					<span className={styles.lableReg}>I have not an account :</span>
-					<Link to="/singUp" className={styles.refReg}>
-						SingUp
-					</Link>
-				</div>
-			</div>
-		</main>
-	)
-}
+  const [pasEyeState, setPasEyeState] = useState<boolean>(true);
 
-export default LogInForm
+  const handlePasEye = useCallback(() => {
+    setPasEyeState((prev) => !prev);
+  }, []);
+
+  const {
+    state: { email, password },
+    changePassword,
+    changeEmail,
+  } = useTextInput<LoginFormData>(LogInFormData);
+
+  return (
+    <main>
+      <form className={styles.form} onSubmit={formPreventDefault}>
+        <div className={styles.formDiv}>
+          <span className={styles.formName}>LogIn</span>
+          <div className={styles.inputs}>
+            <OnePieceInput
+              required
+              width={20}
+              height={2.6}
+              invalidColor="rgb(241, 112, 112)"
+              themeColor={themeColor}
+              type="email"
+              value={email}
+              onChange={changeEmail}
+              placeholder="email..."
+            />
+            <OnePieceInput
+              required
+              invalidColor="rgb(241, 112, 112)"
+              themeColor={themeColor}
+              width={20}
+              height={2.6}
+              type={pasEyeState ? "password" : "text"}
+              onChange={changePassword}
+              value={password}
+              icon="passwordEye"
+              onIconClick={handlePasEye}
+              iconState={pasEyeState}
+              placeholder="password..."
+              pattern="[A-Za-z0-9]*"
+              minLength={6}
+            />
+          </div>
+          <div className={styles.formButtons}>
+            <OnePieceButton
+              text="log in"
+              type="submit"
+              rounding="semicircle"
+              width={20}
+              height={2.6}
+              initBgcolor={themeColor}
+              initColor={fontColor}
+            />
+          </div>
+          <div className={styles.alternatives}>
+            <div className={styles.singUp}>
+              <RefLabel>I don't have an account</RefLabel>
+              <Link to="/singUp" className={styles.singUpRef}>
+                SingUp
+              </Link>
+            </div>
+            <div className={styles.forgotPas}>
+              <RefLabel>I forgot my password</RefLabel>
+              <Link to="/forgotPassword" className={styles.forgotPasRef}>
+                Replace
+              </Link>
+            </div>
+          </div>
+        </div>
+      </form>
+    </main>
+  );
+};
+
+export default LogInForm;
