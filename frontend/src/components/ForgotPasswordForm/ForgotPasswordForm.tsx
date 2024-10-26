@@ -16,7 +16,9 @@ interface ForgotPasswordData {
   [key: string]: string;
 }
 
-const RefLabel = styled.span``;
+const RefLabel = styled.span`
+  color: rgb(87, 44, 87);
+`;
 
 const ForgotPasswordForm: FC<Record<never, never>> = () => {
   // const dispatch = useAppDispatch()

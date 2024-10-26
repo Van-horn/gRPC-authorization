@@ -17,7 +17,9 @@ interface SingUpData {
   [key: string]: string;
 }
 
-const RefLabel = styled.span``;
+const RefLabel = styled.span`
+  color: rgb(87, 44, 87);
+`;
 
 const SingUpForm: FC<Record<never, never>> = () => {
   // const dispatch = useAppDispatch()

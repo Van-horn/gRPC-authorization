@@ -1,5 +1,4 @@
-import { memo } from "react"
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 
 import ForgotPasswordForm from "./ForgotPasswordForm/ForgotPasswordForm"
 import LogInForm from "./LogInForm/LogInForm"
@@ -14,8 +13,9 @@ function App() {
 				element={<ForgotPasswordForm />}
 				path="/forgotPassword"
 			/>
+			<Route element={ <Navigate to="/singUp" />} path="*"/>
 		</Routes>
 	)
 }
 
-export default memo(App)
+export default App

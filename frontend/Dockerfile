@@ -17,8 +17,8 @@ RUN npm prune --production
 
 RUN npm install -g serve
 
-COPY ./docs ./docs
+COPY ./build ./build
 
 EXPOSE 3000
 
-CMD ["serve", "-s", "docs"]
+CMD ["serve", "-s", "build"]
