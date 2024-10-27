@@ -117,7 +117,7 @@ class UserService implements AuthorizationService.Service {
 
          if (!dbUser) throw ApiError.BadRequest('There is not user')
 
-         if (dbUser.refreshToken !== refreshToken) throw ApiError.BadRequest('No access rights')
+         if (dbUser.refreshToken !== refreshToken) throw ApiError.UnAthorizedError()
 
          const isLogout = await this.MasterDBProtoClient.AuthorizationLogout<
             MasterServerUserController.LogoutRequest,
@@ -133,7 +133,7 @@ class UserService implements AuthorizationService.Service {
       }
    }
    refresh = async (
-      ...[{ userId }]: Parameters<AuthorizationService.Service['refresh']>
+      ...[{ userId, refreshToken }]: Parameters<AuthorizationService.Service['refresh']>
    ): ReturnType<AuthorizationService.Service['refresh']> => {
       try {
          const dbUser = await this.SlaveDBProtoClient.UsersUserCredentials<
@@ -142,6 +142,8 @@ class UserService implements AuthorizationService.Service {
          >({ userId })
 
          if (!dbUser) throw ApiError.BadRequest('There is not user')
+
+         if (dbUser.refreshToken !== refreshToken) throw ApiError.UnAthorizedError()
 
          const tokens = await this.TokensClient.TokensGenerateTokens<
             TokensController.GenerateTokensRequest,

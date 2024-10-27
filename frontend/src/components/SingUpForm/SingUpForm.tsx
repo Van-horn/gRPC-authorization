@@ -1,12 +1,4 @@
-import {
-  useState,
-  useCallback,
-  FC,
-  useEffect,
-  ChangeEvent,
-  FormEvent,
-  FormEventHandler,
-} from "react";
+import { useState, useCallback, FC, useEffect, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { OnePieceButton, OnePieceInput } from "my-react-ui-kit";
 import styled from "styled-components";
@@ -14,12 +6,9 @@ import styled from "styled-components";
 import styles from "./SingUpForm.module.scss";
 // import { useAppDispatch, useAppSelector } from '../../../hooks/redux'
 import { useTextInput } from "../../hooks/input";
-import formPreventDefault from "../../utils/formPreventDefault";
 import { themeColor, fontColor } from "../../sass/variables";
-import {
-  useRefreshMutation,
-  useRegistrationMutation,
-} from "../../redux/RTK-Query/authorization";
+import { useRegistrationMutation } from "../../redux/RTK-Query/authorization";
+import { getItem } from "../../utils/localStorage";
 
 interface SingUpData {
   login: string;
@@ -40,11 +29,11 @@ const RefLabel = styled.span`
 
 const SingUpForm: FC<Record<never, never>> = () => {
   const [register, { isLoading }] = useRegistrationMutation({
-    fixedCacheKey: "user",
+    fixedCacheKey: "userCredentials",
   });
-  const [refersh] = useRefreshMutation({
-    fixedCacheKey: "user",
-  });
+  // const [refersh] = useRefreshMutation({
+  //   fixedCacheKey: "userCredentials",
+  // });
   // const dispatch = useAppDispatch()
   // const navigate = useNavigate()
 
@@ -56,6 +45,11 @@ const SingUpForm: FC<Record<never, never>> = () => {
     setPasEyeState((prev) => !prev);
   }, []);
 
+  const handleSingUp = useCallback((e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    SingUpButtonPress(true);
+  }, []);
+
   const {
     state: { email, password, login },
     changeLogin,
@@ -63,20 +57,16 @@ const SingUpForm: FC<Record<never, never>> = () => {
     changeEmail,
   } = useTextInput<SingUpData>(singUpData);
 
-  const handleSingUp = useCallback((e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    SingUpButtonPress(true);
-  }, []);
-
   useEffect(() => {
     async function registerHandler(): Promise<void> {
-      const data = await register({ login, email, password });
-      await refersh({
-        user_id: 45,
-        refreshToken: "",
-      });
-      console.log(data);
-      SingUpButtonPress(false);
+      try {
+        const data = await register({ login, email, password });
+        console.log(data);
+     
+      } catch (error) {
+      } finally {
+        SingUpButtonPress(false);
+      }
     }
     if (isSingUpButtonPress) registerHandler();
   }, [email, isSingUpButtonPress, login, password, register]);
@@ -155,14 +145,3 @@ const SingUpForm: FC<Record<never, never>> = () => {
 };
 
 export default SingUpForm;
-
-interface D {
-  ff(fff: number): string;
-}
-
-class s implements D {
-  ff(...arg: Parameters<D["ff"]>): ReturnType<D.ff> {
-    console.log(arg[0]); 
-    return "";
-  }
-}

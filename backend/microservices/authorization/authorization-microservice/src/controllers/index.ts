@@ -113,7 +113,10 @@ class UserController implements AuthorizationController.Controller {
 
          if (!refreshTokenPayload) throw ApiError.UnAthorizedError()
 
-         const user = await this.service.refresh({ userId: refreshTokenPayload.userId })
+         const user = await this.service.refresh({
+            userId: refreshTokenPayload.userId,
+            refreshToken: refreshTokenFromCookie,
+         })
 
          if (!user) throw ApiError.ServerError()
 
