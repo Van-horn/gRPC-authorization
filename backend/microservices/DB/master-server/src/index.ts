@@ -9,16 +9,15 @@ import UserController from './controllers/user-controller'
 
 export const sequelize = GetSequelize('production')
 
-const { refresh, registration, forgotPassword, login, logout } = new UserController(sequelize)
+const { refresh, registration, forgotPassword, login, logout, writeToken } = new UserController(sequelize)
 
 async function main(): Promise<void> {
    try {
       await MasterDBProto.createMasterDBServer({
          url: `${process.env.HOST ?? '0.0.0.0'}:${process.env.PORT ?? 8080}`,
          ServiceHandlers: {
-            Authorization: { refresh, login, logout, registration, forgotPassword },
-         }
-      
+            Authorization: { refresh, login, logout, registration, forgotPassword, writeToken },
+         },
       })
 
       await sequelize.authenticate()

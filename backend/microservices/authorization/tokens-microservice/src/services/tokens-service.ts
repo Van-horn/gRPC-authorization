@@ -1,20 +1,16 @@
 import { sign, verify } from 'jsonwebtoken'
-import { GenerationResponse, GenerationRequest } from 'types-for-store/src/tokens-microservice'
+import { TokensService } from 'types-for-store'
 import { ApiError } from 'shared-for-store'
 
-export interface ITokensService {
-   generateTokens(value: GenerationRequest): GenerationResponse
-   accessTokenValidation(accessToken: string): boolean
-   refreshTokenValidation(refreshToken: string): boolean
-}
-
-class TokensService implements ITokensService {
-   generateTokens(value: GenerationRequest): GenerationResponse {
+class TokensService implements TokensService.Service {
+   generateTokens(
+      ...[payload]: Parameters<TokensService.Service['generateTokens']>
+   ): ReturnType<TokensService.Service['generateTokens']> {
       try {
-         const accessToken = sign(value, process.env.JWT_ACCESS ?? 'JWT_ACCESS', {
+         const accessToken = sign(payload, process.env.JWT_ACCESS ?? 'JWT_ACCESS', {
             expiresIn: '10m',
          })
-         const refreshToken = sign(value, process.env.JWT_REFRESH ?? 'JWT_REFRESH', {
+         const refreshToken = sign(payload, process.env.JWT_REFRESH ?? 'JWT_REFRESH', {
             expiresIn: '30d',
          })
          return {
@@ -25,20 +21,28 @@ class TokensService implements ITokensService {
          throw ApiError.ServerError([error])
       }
    }
-   accessTokenValidation(accessToken: string): boolean {
+   accessTokenValidation(
+      ...[accessToken]: Parameters<TokensService.Service['accessTokenValidation']>
+   ): ReturnType<TokensService.Service['accessTokenValidation']> {
       try {
-         const data = verify(accessToken, process.env.JWT_ACCESS ?? 'JWT_ACCESS')
-         return !!data
+         const payload = verify(accessToken, process.env.JWT_ACCESS ?? 'JWT_ACCESS') as ReturnType<
+            TokensService.Service['accessTokenValidation']
+         >
+         return payload
       } catch (error) {
-         return false
+         throw ApiError.BadRequest('Token died or invalid')
       }
    }
-   refreshTokenValidation(refreshToken: string): boolean {
+   refreshTokenValidation(
+      ...[refreshToken]: Parameters<TokensService.Service['refreshTokenValidation']>
+   ): ReturnType<TokensService.Service['refreshTokenValidation']> {
       try {
-         const data = verify(refreshToken, process.env.JWT_REFRESH ?? 'JWT_REFRESH')
-         return !!data
+         const payload = verify(refreshToken, process.env.JWT_REFRESH ?? 'JWT_REFRESH') as ReturnType<
+            TokensService.Service['refreshTokenValidation']
+         >
+         return payload
       } catch (error) {
-         return false
+         throw ApiError.BadRequest('Token died or invalid')
       }
    }
 }

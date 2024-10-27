@@ -1,28 +1,18 @@
 import { ApiError, grpcErrorHandler } from 'shared-for-store'
-import { ServerUnaryCall, sendUnaryData, handleUnaryCall } from '@grpc/grpc-js'
-import { Authorization } from 'types-for-store/src/master-server'
+import { MasterServerUserController } from 'types-for-store'
 import { MySequelize } from 'db-for-store/dist/tables'
 
 import UserService from '../services/user-service'
 
-export interface IUserController {
-   registration: handleUnaryCall<Authorization.RegistrationData, Authorization.RegistrationRes>
-   login: handleUnaryCall<Authorization.LoginData, Authorization.LoginRes>
-   logout: handleUnaryCall<Authorization.LogoutData, Authorization.LogoutRes>
-   refresh: handleUnaryCall<Authorization.RefreshData, Authorization.RefreshRes>
-   forgotPassword: handleUnaryCall<Authorization.ForgotPasswordData, Authorization.ForgotPasswordRes>
-}
-
-class UserController implements IUserController {
+class UserController implements MasterServerUserController.Controller {
    private readonly service: UserService
 
    constructor(sequelize: MySequelize) {
       this.service = new UserService(sequelize)
    }
    registration = async (
-      call: ServerUnaryCall<Authorization.RegistrationData, Authorization.RegistrationRes>,
-      callback: sendUnaryData<Authorization.RegistrationRes>,
-   ): Promise<void> => {
+      ...[call, callback]: Parameters<MasterServerUserController.Controller['registration']>
+   ): Promise<ReturnType<MasterServerUserController.Controller['registration']>> => {
       try {
          if (!call.request?.email || !call.request?.login || !call.request?.password)
             throw ApiError.BadRequest('There are not all data')
@@ -34,57 +24,66 @@ class UserController implements IUserController {
          if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
+   writeToken = async (
+      ...[call, callback]: Parameters<MasterServerUserController.Controller['writeToken']>
+   ): Promise<ReturnType<MasterServerUserController.Controller['writeToken']>> => {
+      try {
+         if (!call.request?.userId || !call.request?.refreshToken) throw ApiError.BadRequest('There are not all data')
+
+         const isWriteToken = await this.service.writeToken(call.request)
+
+         callback(null, isWriteToken)
+      } catch (error) {
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
+      }
+   }
 
    login = async (
-      call: ServerUnaryCall<Authorization.LoginData, Authorization.LoginRes>,
-      callback: sendUnaryData<Authorization.LoginRes>,
-   ): Promise<void> => {
+      ...[call, callback]: Parameters<MasterServerUserController.Controller['login']>
+   ): Promise<ReturnType<MasterServerUserController.Controller['login']>> => {
       try {
-         if (!call.request?.user_id || !call.request?.refreshToken) throw ApiError.BadRequest('There are not all data')
+         if (!call.request?.userId || !call.request?.refreshToken) throw ApiError.BadRequest('There are not all data')
 
          const isLogin = await this.service.login(call.request)
-         callback(null, { value: isLogin })
+         callback(null, isLogin)
       } catch (error) {
          if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
    logout = async (
-      call: ServerUnaryCall<Authorization.LogoutData, Authorization.LogoutRes>,
-      callback: sendUnaryData<Authorization.LogoutRes>,
-   ): Promise<void> => {
+      ...[call, callback]: Parameters<MasterServerUserController.Controller['logout']>
+   ): Promise<ReturnType<MasterServerUserController.Controller['logout']>> => {
       try {
-         if (!call.request?.user_id) throw ApiError.BadRequest('There are not all data')
+         if (!call.request?.userId) throw ApiError.BadRequest('There are not all data')
 
          const isLogout = await this.service.logout(call.request)
-         callback(null, { value: isLogout })
+         callback(null, isLogout)
       } catch (error) {
          if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
    refresh = async (
-      call: ServerUnaryCall<Authorization.RefreshData, Authorization.RefreshRes>,
-      callback: sendUnaryData<Authorization.RefreshRes>,
-   ): Promise<void> => {
+      ...[call, callback]: Parameters<MasterServerUserController.Controller['refresh']>
+   ): Promise<ReturnType<MasterServerUserController.Controller['refresh']>> => {
       try {
-         if (!call.request?.user_id || !call.request?.refreshToken) throw ApiError.BadRequest('There are not all data')
+         if (!call.request?.userId || !call.request?.refreshToken) throw ApiError.BadRequest('There are not all data')
 
          const isRefresh = await this.service.refresh(call.request)
-         callback(null, { value: isRefresh })
+         callback(null, isRefresh)
       } catch (error) {
          if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
 
    forgotPassword = async (
-      call: ServerUnaryCall<Authorization.ForgotPasswordData, Authorization.ForgotPasswordRes>,
-      callback: sendUnaryData<Authorization.ForgotPasswordRes>,
-   ): Promise<void> => {
+      ...[call, callback]: Parameters<MasterServerUserController.Controller['forgotPassword']>
+   ): Promise<ReturnType<MasterServerUserController.Controller['forgotPassword']>> => {
       try {
-         if (!call.request?.user_id || !call.request?.password || !call.request?.refreshToken)
+         if (!call.request?.userId || !call.request?.password || !call.request?.refreshToken)
             throw ApiError.BadRequest('There are not all data')
 
          const isForPas = await this.service.forgotPassword(call.request)
-         callback(null, { value: isForPas })
+         callback(null, isForPas)
       } catch (error) {
          if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }

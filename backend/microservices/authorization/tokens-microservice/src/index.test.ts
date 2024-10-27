@@ -1,11 +1,6 @@
 import { ApiError } from 'shared-for-store'
 import { TokensProto } from 'proto-for-store'
-import {
-   ValidationRequest,
-   ValidationResponse,
-   GenerationRequest,
-   GenerationResponse,
-} from 'types-for-store/src/tokens-microservice'
+import { TokensController } from 'types-for-store'
 import { Server } from '@grpc/grpc-js'
 
 import tokensController from './controllers/tokens-controller'
@@ -35,25 +30,55 @@ test('tokens-microservice', async () => {
    const { TokensGenerateTokens, TokensAccessTokenValidation, TokensRefreshTokenValidation } =
       await TokensProto.createTokensClient({ url: '0.0.0.0:5000' })
 
-   const tokens = await TokensGenerateTokens<GenerationRequest, GenerationResponse>({})
+   const tokens = await TokensGenerateTokens<
+      TokensController.GenerateTokensRequest,
+      TokensController.GenerateTokensResponse
+   >({ userId: 1 })
 
    if (tokens) {
-      expect(Object.keys(tokens)).toHaveLength(2)
-      expect(tokens).toHaveProperty('accessToken')
-      expect(tokens).toHaveProperty('refreshToken')
+      expect(tokens).toEqual(
+         expect.objectContaining({
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+         })
+      )
    } else {
       throw ApiError.BadRequest('No tokens for testing')
    }
 
-   const accessTokenValidationRes = await TokensAccessTokenValidation<ValidationRequest, ValidationResponse>({
+   const accessTokenValidationRes = await TokensAccessTokenValidation<
+      TokensController.ValidationRequest,
+      TokensController.ValidationResponse
+   >({
       value: tokens.accessToken,
    })
-   expect(accessTokenValidationRes).toStrictEqual<ValidationResponse>({ value: true })
 
-   const refreshTokenValidationRes = await TokensRefreshTokenValidation<ValidationRequest, ValidationResponse>({
+   if (accessTokenValidationRes) {
+      expect(accessTokenValidationRes).toEqual<TokensController.ValidationResponse>(
+         expect.objectContaining({
+            userId: 1,
+         })
+      )
+   } else {
+      throw ApiError.BadRequest('No validation result')
+   }
+
+   const refreshTokenValidationRes = await TokensRefreshTokenValidation<
+      TokensController.ValidationRequest,
+      TokensController.ValidationResponse
+   >({
       value: tokens.refreshToken,
    })
-   expect(refreshTokenValidationRes).toStrictEqual<ValidationResponse>({ value: true })
+
+   if (refreshTokenValidationRes) {
+      expect(refreshTokenValidationRes).toEqual<TokensController.ValidationResponse>(
+         expect.objectContaining({
+            userId: 1,
+         })
+      )
+   } else {
+      throw ApiError.BadRequest('No validation result')
+   }
 
    TestServer.forceShutdown()
 })

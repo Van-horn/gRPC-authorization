@@ -1,66 +1,46 @@
-import { ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js'
-import {
-   ValidationResponse,
-   ValidationRequest,
-   GenerationRequest,
-   GenerationResponse
-} from 'types-for-store/src/tokens-microservice'
+import { TokensController } from 'types-for-store'
 import { ApiError, grpcErrorHandler } from 'shared-for-store'
-import { handleUnaryCall } from '@grpc/grpc-js/build/src/server-call'
 
 import tokensService from '../services/tokens-service'
-// import { elasticsearchClient } from '..'
 
-export interface ITokensController {
-   generateTokens: handleUnaryCall<GenerationRequest, GenerationResponse>
-   accessTokenValidation: handleUnaryCall<ValidationRequest, ValidationResponse>
-   refreshTokenValidation: handleUnaryCall<ValidationRequest, ValidationResponse>
-}
-
-class TokensController implements ITokensController {
- async  generateTokens(call: ServerUnaryCall<GenerationRequest, GenerationResponse>, callback: sendUnaryData<GenerationResponse>): Promise<void> {
+class TokensController implements TokensController.Controller {
+   async generateTokens(
+      ...[call, callback]: Parameters<TokensController.Controller['generateTokens']>
+   ): Promise<ReturnType<TokensController.Controller['generateTokens']>> {
       try {
-         const result = tokensService.generateTokens(call.request)
+         if (!call.request?.userId) throw ApiError.BadRequest('No data for tokens creating')
 
-         callback(null, result)
+         const tokens = tokensService.generateTokens(call.request)
 
+         callback(null, tokens)
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error));
-       
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
-async   accessTokenValidation(
-      call: ServerUnaryCall<ValidationRequest, ValidationResponse>,
-      callback: sendUnaryData<ValidationResponse>
-   ): Promise<void> {
+   async accessTokenValidation(
+      ...[call, callback]: Parameters<TokensController.Controller['accessTokenValidation']>
+   ): Promise<Promise<ReturnType<TokensController.Controller['accessTokenValidation']>>> {
       try {
-         if (!call.request.value) throw ApiError.BadRequest('There is not token')
+         if (!call.request?.value) throw ApiError.BadRequest('There is not token')
 
-         const result = tokensService.accessTokenValidation(call.request.value)
+         const payload = tokensService.accessTokenValidation(call.request.value)
 
-         callback(null, { value: result })
-
-       
+         callback(null, payload)
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error));
-       
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
- async  refreshTokenValidation(
-      call: ServerUnaryCall<ValidationRequest, ValidationResponse>,
-      callback: sendUnaryData<ValidationResponse>
-   ): Promise<void> {
+   async refreshTokenValidation(
+      ...[call, callback]: Parameters<TokensController.Controller['refreshTokenValidation']>
+   ): Promise<Promise<ReturnType<TokensController.Controller['refreshTokenValidation']>>> {
       try {
-         if (!call.request.value) throw ApiError.BadRequest('There is not token')
+         if (!call.request?.value) throw ApiError.BadRequest('There is not token')
 
-         const result = tokensService.refreshTokenValidation(call.request.value)
+         const payload = tokensService.refreshTokenValidation(call.request.value)
 
-         callback(null, { value: result })
-
-        
+         callback(null, payload)
       } catch (error) {
-         if (error instanceof ApiError) callback(grpcErrorHandler(error));
-        
+         if (error instanceof ApiError) callback(grpcErrorHandler(error))
       }
    }
 }

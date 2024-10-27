@@ -1,16 +1,8 @@
 import { MySequelize } from 'db-for-store/dist/tables'
 import { ApiError } from 'shared-for-store'
-import { Authorization } from 'types-for-store/src/master-server'
+import { MasterServerUserService } from 'types-for-store'
 
-interface IUserService {
-   registration(props: Authorization.RegistrationData): Promise<Authorization.RegistrationRes>
-   login(props: Authorization.LoginData): Promise<boolean>
-   logout(props: Authorization.LogoutData): Promise<boolean>
-   refresh(props: Authorization.RefreshData): Promise<boolean>
-   forgotPassword(props: Authorization.ForgotPasswordData): Promise<boolean>
-}
-
-class UserService implements IUserService {
+class UserService implements MasterServerUserService.Service {
    private readonly sequelize: MySequelize
    private readonly Tables: MySequelize['models']
 
@@ -19,54 +11,70 @@ class UserService implements IUserService {
       this.Tables = this.sequelize.models
    }
 
-
-   registration = async ({
-      refreshToken,
-      ...props
-   }: Authorization.RegistrationData): Promise<Authorization.RegistrationRes> => {
+   registration = async (
+      ...[props]: Parameters<MasterServerUserService.Service['registration']>
+   ): ReturnType<MasterServerUserService.Service['registration']> => {
       try {
          const {
             dataValues: { user_id },
          } = await this.Tables.Users.create(props)
 
-         await this.Tables.Tokens.create({ user_id, refresh_token: refreshToken })
-         return { user_id }
+         return { userId: user_id }
+      } catch (error) {
+         throw ApiError.ServerError([error])
+      }
+   }
+   writeToken = async (
+      ...[{ refreshToken, userId }]: Parameters<MasterServerUserService.Service['writeToken']>
+   ): ReturnType<MasterServerUserService.Service['writeToken']> => {
+      try {
+         await this.Tables.Tokens.create({ user_id: userId, refresh_token: refreshToken })
+
+         return { value: true }
       } catch (error) {
          throw ApiError.ServerError([error])
       }
    }
 
-   login = async ({ user_id, refreshToken }: Authorization.LoginData): Promise<boolean> => {
+   login = async (
+      ...[{ userId, refreshToken }]: Parameters<MasterServerUserService.Service['login']>
+   ): ReturnType<MasterServerUserService.Service['login']> => {
       try {
-         await this.Tables.Tokens.upsert({ refresh_token: refreshToken, user_id })
+         await this.Tables.Tokens.upsert({ refresh_token: refreshToken, user_id: userId })
 
-         return true
+         return { value: true }
       } catch (error) {
          throw ApiError.ServerError([error])
       }
    }
-   logout = async ({ user_id }: Authorization.LogoutData): Promise<boolean> => {
+   logout = async (
+      ...[{ userId }]: Parameters<MasterServerUserService.Service['logout']>
+   ): ReturnType<MasterServerUserService.Service['logout']> => {
       try {
-         await this.Tables.Tokens.destroy({ where: { user_id } })
-         return true
+         await this.Tables.Tokens.destroy({ where: { user_id: userId } })
+         return { value: true }
       } catch (error) {
          throw ApiError.ServerError([error])
       }
    }
-   refresh = async ({ user_id, refreshToken }: Authorization.RefreshData): Promise<boolean> => {
+   refresh = async (
+      ...[{ userId, refreshToken }]: Parameters<MasterServerUserService.Service['refresh']>
+   ): ReturnType<MasterServerUserService.Service['refresh']> => {
       try {
-         await this.Tables.Tokens.upsert({ refresh_token: refreshToken, user_id })
-         return true
+         await this.Tables.Tokens.upsert({ refresh_token: refreshToken, user_id: userId })
+         return { value: true }
       } catch (error) {
          throw ApiError.ServerError([error])
       }
    }
-   forgotPassword = async ({ refreshToken, user_id, password }: Authorization.ForgotPasswordData): Promise<boolean> => {
+   forgotPassword = async (
+      ...[{ refreshToken, userId, password }]: Parameters<MasterServerUserService.Service['forgotPassword']>
+   ): ReturnType<MasterServerUserService.Service['forgotPassword']> => {
       try {
-         await this.Tables.Users.update({ password }, { where: { user_id } })
-         await this.Tables.Tokens.upsert({ refresh_token: refreshToken, user_id })
+         await this.Tables.Users.update({ password }, { where: { user_id: userId } })
+         await this.Tables.Tokens.upsert({ refresh_token: refreshToken, user_id: userId })
 
-         return true
+         return { value: true }
       } catch (error) {
          throw ApiError.ServerError([error])
       }

@@ -29,16 +29,13 @@ Body
 method PATCH
 Body 
 {
-  "user_id": number,
   "accessToken: string
 }
 
 4) /refresh
 method PATCH
 Body 
-{
-  "user_id": number,
-}
+{}
 
 5) /forgotPassword
 method PATCH

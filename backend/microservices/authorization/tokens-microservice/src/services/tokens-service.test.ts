@@ -1,22 +1,38 @@
+import { TokensService } from 'types-for-store'
+import { ApiError } from 'shared-for-store'
+
 import tokensService from './tokens-service'
 
 const { generateTokens, accessTokenValidation, refreshTokenValidation } = tokensService
 
 describe('tokens-service', () => {
-   const tokens = generateTokens({})
+   const tokens = generateTokens({ userId: 1 })
    const { accessToken, refreshToken } = tokens
 
    test('generateTokens', () => {
-      expect(Object.keys(tokens)).toHaveLength(2)
-      expect(tokens).toHaveProperty('accessToken')
-      expect(tokens).toHaveProperty('refreshToken')
+      expect(tokens).toEqual(
+         expect.objectContaining({
+            accessToken: expect.any(String),
+            refreshToken: expect.any(String),
+         })
+      )
    })
    it('accessTokenValidation', () => {
-      expect(accessTokenValidation(accessToken)).toBe<boolean>(true)
-      expect(accessTokenValidation('token')).toBe<boolean>(false)
+      expect(accessTokenValidation(accessToken)).toEqual<ReturnType<TokensService.Service['accessTokenValidation']>>(
+         expect.objectContaining({
+            userId: 1,
+         })
+      )
+      expect(() => accessTokenValidation('token')).toThrow(ApiError.BadRequest('Token died or invalid'))
    })
+
    it('refreshTokenValidation', () => {
-      expect(refreshTokenValidation(refreshToken)).toBe<boolean>(true)
-      expect(refreshTokenValidation('token')).toBe<boolean>(false)
+      expect(refreshTokenValidation(refreshToken)).toEqual<ReturnType<TokensService.Service['refreshTokenValidation']>>(
+         expect.objectContaining({
+            userId: 1,
+         })
+      )
+
+      expect(() => refreshTokenValidation('token')).toThrow(ApiError.BadRequest('Token died or invalid'))
    })
 })

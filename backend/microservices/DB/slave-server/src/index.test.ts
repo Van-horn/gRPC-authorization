@@ -1,7 +1,7 @@
 import { ApiError } from 'shared-for-store'
 import { SlaveDBProto } from 'proto-for-store'
 import { Server } from '@grpc/grpc-js'
-import { Users } from 'types-for-store/src/slave-server'
+import { SlaveServerUserController } from 'types-for-store'
 
 import UserController from './controllers/user-controller'
 import GetSequelize from './DB_DATA'
@@ -35,7 +35,10 @@ test('slave-server', async () => {
 
    const { UsersUserCredentials } = await SlaveDBProto.createSlaveDBClient({ url: '0.0.0.0:5000' })
 
-   const user = await UsersUserCredentials<Users.UserCredGetData, Users.UserCredentials>({ user_id: 1 })
+   const user = await UsersUserCredentials<
+      SlaveServerUserController.CredentialsRequest,
+      SlaveServerUserController.CredentialsResponse
+   >({ userId: 1 })
 
    expect(user).toBe(undefined)
 

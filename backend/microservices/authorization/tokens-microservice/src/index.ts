@@ -7,15 +7,13 @@ import { TokensProto } from 'proto-for-store'
 
 import tokensController from './controllers/tokens-controller'
 
-
 // export const elasticsearchClient = new Client({
-//    node: 'http://elasticsearch:9200', 
+//    node: 'http://elasticsearch:9200',
 //    auth: {
-//      username: 'elastic', 
-//      password: 'root'    
+//      username: 'elastic',
+//      password: 'root'
 //    }
 //  });
-
 
 async function main(): Promise<void> {
    try {
@@ -27,11 +25,9 @@ async function main(): Promise<void> {
                refreshTokenValidation: tokensController.refreshTokenValidation,
             },
          },
-         url: '0.0.0.0:8080'
-     
+         url: '0.0.0.0:8080',
       })
-
- } catch (error) {
+   } catch (error) {
       throw ApiError.ServerError([error])
    }
 }
